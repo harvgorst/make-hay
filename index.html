@@ -738,6 +738,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .jobcard .jtotal { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-weight: 700; font-variant-numeric: tabular-nums; }
   .jobcard .del { align-self: center; min-width: 64px; }
   .pill { font-size: 11px; font-weight: 600; color: var(--accent-fg); background: var(--accent); border-radius: 10px; padding: 1px 7px; vertical-align: 2px; }
+  .restore { margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 8px; }
+  [hidden] { display: none !important; }
+  .restoreset { display: flex; gap: 10px; align-items: center; justify-content: space-between; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .restoreset > span { min-width: 0; }
+  .restoreset button { flex: none; }
   .totals .big { font-size: 22px; font-weight: 700; border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
   .lbl { background: rgba(0,0,0,.7); color: #fff; border: 0; box-shadow: none; font-weight: 600; font-size: 12px; text-align: center; }
   .lbl::before { display: none; }
@@ -787,13 +792,17 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </section>
 
     <section>
-      <h2>Rates for this job (£ per m²)</h2>
+      <h2>Your rates (£ per m²)</h2>
       <div class="rates" id="rates"></div>
       <div class="rates" style="margin-top:10px">
         <span></span><label for="callout">Call-out / travel (£)</label><input id="callout" type="number" min="0" step="1">
         <span></span><label for="minimum">Minimum charge (£)</label><input id="minimum" type="number" min="0" step="1">
       </div>
-      <p class="muted">Each job keeps its own rates, so old quotes don't change. New jobs start with the rates you last used.</p>
+      <p class="muted">These rates and the minimum charge apply to every job. They only change when you edit them here. Call-out is set per job.</p>
+      <div id="restore" class="restore" hidden>
+        <div class="row"><strong class="grow">Earlier rates found on this device</strong><button id="restorehide" class="ghost" aria-label="Hide earlier rates">Hide</button></div>
+        <div id="restorelist"></div>
+      </div>
     </section>
   </div>
 </aside>
@@ -824,14 +833,16 @@ const acres = a => (a / 4046.856).toFixed(2) + ' ac';
 const fmtDate = t => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 // ---------- Storage ----------
-// store = { defaults: {rates, callout, minimum}, jobs: [job], currentId, view, base, labels }
-// job   = { id, name, patches: [{id, name, diff, latlngs}], rates, callout, minimum, nextId, created, updated }
+// store = { rates, minimum, defaults: {callout}, jobs: [job], currentId, view, base, labels }
+// job   = { id, name, patches: [{id, name, diff, latlngs}], callout, nextId, created, updated }
+// Rates and the minimum charge are one set shared by every job. Nothing but typing in the Rates boxes changes them.
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-let store = { defaults: { rates: Object.fromEntries(DIFFS.map(d => [d.key, d.rate])), callout: 0, minimum: 0 },
+const FACTORY = Object.fromEntries(DIFFS.map(d => [d.key, d.rate]));
+let store = { rates: null, minimum: null, defaults: { callout: 0 },
               jobs: [], currentId: null, view: null, base: 'sat', labels: true };
 function makeJob(name) {
   const d = store.defaults, now = Date.now();
-  return { id: newId(), name: name || '', patches: [], rates: { ...d.rates }, callout: d.callout || 0, minimum: d.minimum || 0, nextId: 1, created: now, updated: now };
+  return { id: newId(), name: name || '', patches: [], callout: d.callout || 0, nextId: 1, created: now, updated: now };
 }
 try {
   const s = JSON.parse(localStorage.getItem(KEY));
@@ -839,7 +850,8 @@ try {
   else {
     const old = JSON.parse(localStorage.getItem(OLD_KEY));   // bring over the single job from the first version
     if (old) {
-      store.defaults = { rates: { ...store.defaults.rates, ...old.rates }, callout: old.callout || 0, minimum: old.minimum || 0 };
+      store.rates = old.rates ? { ...old.rates } : null; store.minimum = old.minimum ?? null;
+      store.defaults = { callout: old.callout || 0 };
       store.view = old.view || null;
       if ((old.patches && old.patches.length) || old.job) {
         const j = makeJob(old.job); j.patches = old.patches || []; j.nextId = old.nextId || j.patches.length + 1;
@@ -848,6 +860,14 @@ try {
     }
   }
 } catch (e) {}
+// Find the rates you last typed: the shared set, else the last-used set from the previous version, else the newest job's own set.
+const validRates = r => r && DIFFS.every(d => typeof r[d.key] === 'number' && isFinite(r[d.key]));
+if (!validRates(store.rates)) {
+  const newest = [...store.jobs].sort((a, b) => b.updated - a.updated).find(j => validRates(j.rates));
+  const found = (store.defaults && validRates(store.defaults.rates) && store.defaults.rates) || (newest && newest.rates);
+  store.rates = found ? { ...found } : { ...FACTORY };
+}
+if (typeof store.minimum !== 'number') store.minimum = (store.defaults && +store.defaults.minimum) || 0;
 let job = store.jobs.find(j => j.id === store.currentId);
 if (!job) { job = makeJob(); store.jobs.push(job); store.currentId = job.id; }
 const isEmpty = j => !j.patches.length && !j.name.trim();
@@ -867,8 +887,8 @@ function ringArea(ll) {
 }
 function jobTotals(j) {
   let area = 0, sub = 0;
-  for (const p of j.patches) { const a = ringArea(p.latlngs); area += a; sub += a * (j.rates[p.diff] || 0); }
-  const callout = j.patches.length ? +j.callout || 0 : 0, minimum = +j.minimum || 0;
+  for (const p of j.patches) { const a = ringArea(p.latlngs); area += a; sub += a * (store.rates[p.diff] || 0); }
+  const callout = j.patches.length ? +j.callout || 0 : 0, minimum = +store.minimum || 0;
   const total = Math.max(sub + callout, j.patches.length ? minimum : 0);
   return { area, sub, callout, total };
 }
@@ -949,7 +969,7 @@ function render() {
   $('patches').innerHTML = job.patches.length ? '' :
     '<p class="muted">No patches yet. Find the site on the map, press <b>＋ Draw patch</b> and tap round the edge of the area.</p>';
   for (const p of job.patches) {
-    const a = ringArea(p.latlngs), price = a * (job.rates[p.diff] || 0);
+    const a = ringArea(p.latlngs), price = a * (store.rates[p.diff] || 0);
     const layer = layers[p.id];
     layer.setStyle(styleFor(p));
     layer.setTooltipContent(esc(p.name) + '<br>' + fmtArea(a));
@@ -990,19 +1010,24 @@ function render() {
   return t;
 }
 
-// Rates, call-out and minimum belong to the job; edits also become the starting values for new jobs
+// Rates and minimum charge are shared by all jobs. A blank or half-typed box is ignored, so a rate is never wiped to zero by accident.
+const readNum = v => (v === '' || !isFinite(+v)) ? null : +v;
 $('rates').innerHTML = DIFFS.map(d =>
   `<span class="dot" style="--c:${d.color}"></span><label for="r-${d.key}">${d.name}</label><input id="r-${d.key}" type="number" min="0" step="0.01">`).join('');
 for (const d of DIFFS) $('r-' + d.key).oninput = e => {
-  job.rates[d.key] = store.defaults.rates[d.key] = +e.target.value || 0; save(); render();
+  const v = readNum(e.target.value); if (v === null) return;
+  store.rates[d.key] = v; save(false); render(); renderRestore();
 };
-for (const k of ['callout', 'minimum']) $(k).oninput = e => { job[k] = store.defaults[k] = +e.target.value || 0; save(); render(); };
+for (const d of DIFFS) $('r-' + d.key).onblur = e => { e.target.value = store.rates[d.key]; };
+$('minimum').oninput = e => { store.minimum = readNum(e.target.value) ?? 0; save(false); render(); };
+$('callout').oninput = e => { job.callout = store.defaults.callout = readNum(e.target.value) ?? 0; save(); render(); };
 $('jobname').oninput = e => { job.name = e.target.value; save(); };
 
 function fillInputs() {
   $('jobname').value = job.name;
-  for (const d of DIFFS) $('r-' + d.key).value = job.rates[d.key] ?? '';
-  for (const k of ['callout', 'minimum']) $(k).value = job[k] || '';
+  for (const d of DIFFS) $('r-' + d.key).value = store.rates[d.key];
+  $('minimum').value = store.minimum || '';
+  $('callout').value = job.callout || '';
   $('quote').hidden = true;
 }
 function loadJob(j, fit = true) {
@@ -1015,6 +1040,31 @@ function loadJob(j, fit = true) {
   fillInputs(); save(false); render();
   if (fit && job.patches.length) map.fitBounds(L.featureGroup(Object.values(layers)).getBounds(), { maxZoom: 19, padding: [30, 30] });
 }
+
+// ---------- Earlier rates ----------
+// Offer any other rate sets still saved on this device (from the previous version or from individual jobs) so lost prices can be got back.
+const ratesKey = r => DIFFS.map(d => (+r[d.key]).toFixed(2)).join('|');
+function earlierRates() {
+  const seen = new Set([ratesKey(store.rates), ratesKey(FACTORY)]), out = [];
+  const add = (r, from) => { if (!validRates(r)) return; const k = ratesKey(r); if (seen.has(k)) return; seen.add(k); out.push({ r, from }); };
+  for (const j of [...store.jobs].sort((a, b) => b.updated - a.updated)) add(j.rates, (j.name || 'Untitled job') + ', ' + fmtDate(j.updated));
+  if (store.defaults) add(store.defaults.rates, 'last used');
+  try { const old = JSON.parse(localStorage.getItem(OLD_KEY)); if (old) add(old.rates, 'previous version of the app'); } catch (e) {}
+  return out;
+}
+function renderRestore() {
+  const sets = store.restoreDismissed ? [] : earlierRates();
+  $('restore').hidden = !sets.length;
+  $('restorelist').innerHTML = sets.map((s, i) => `
+    <div class="restoreset">
+      <span>${DIFFS.map(d => `${d.name} £${(+s.r[d.key]).toFixed(2)}`).join(' · ')}<br><span class="muted">from ${esc(s.from)}</span></span>
+      <button data-i="${i}">Use these</button>
+    </div>`).join('');
+  $('restorelist').querySelectorAll('button').forEach(b => b.onclick = () => {
+    store.rates = { ...sets[+b.dataset.i].r }; save(false); fillInputs(); render(); renderRestore();
+  });
+}
+$('restorehide').onclick = () => { store.restoreDismissed = true; save(false); renderRestore(); };
 
 // ---------- Saved jobs ----------
 function showJobs(open) {
@@ -1061,7 +1111,7 @@ $('copy').onclick = async () => {
   const lines = [job.name ? 'Scything quote: ' + job.name : 'Scything quote', ''];
   for (const p of job.patches) {
     const a = ringArea(p.latlngs);
-    lines.push(`${p.name} - ${D[p.diff].name} - ${fmtArea(a)} @ £${(+job.rates[p.diff]).toFixed(2)}/m² = ${money(a * (job.rates[p.diff] || 0))}`);
+    lines.push(`${p.name} - ${D[p.diff].name} - ${fmtArea(a)} @ £${(+store.rates[p.diff]).toFixed(2)}/m² = ${money(a * (store.rates[p.diff] || 0))}`);
   }
   lines.push('', 'Total area: ' + fmtArea(t.area) + ' (' + acres(t.area) + ')');
   if (t.callout) lines.push('Call-out / travel: ' + money(t.callout));
@@ -1091,6 +1141,10 @@ $('locate').onclick = () => map.locate({ setView: true, maxZoom: 19 });
 map.on('locationerror', () => flash('Location unavailable'));
 
 loadJob(job, !store.view);
+renderRestore();
+save(false);
+// Ask the browser not to clear this site's saved data when space is short or the site hasn't been opened for a while
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>

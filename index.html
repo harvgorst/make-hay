@@ -728,7 +728,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--c); }
   .totals { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-variant-numeric: tabular-nums; }
   #jobview, #jobsview { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
-  #jobview[hidden], #jobsview[hidden] { display: none; }
+  #jobview[hidden], #jobsview[hidden], #settingsview[hidden] { display: none; }
+  #settingsview { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
   #joblist { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .jobcard { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
   .jobcard.current { border-color: var(--accent); }
@@ -770,10 +771,30 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <div id="joblist"></div>
   </div>
 
+  <div id="settingsview" hidden>
+    <div class="row">
+      <h1 class="grow">Settings</h1>
+      <button id="closesettings" aria-label="Back to current job">Done</button>
+    </div>
+    <section>
+      <h2>Rates by difficulty (£ per m²)</h2>
+      <div class="rates" id="rates"></div>
+      <div class="rates" style="margin-top:10px">
+        <span></span><label for="minimum">Minimum charge (£)</label><input id="minimum" type="number" min="0" step="1">
+      </div>
+      <p class="muted">These apply to every job. They only change when you edit them here.</p>
+      <div id="restore" class="restore" hidden>
+        <div class="row"><strong class="grow">Earlier rates found on this device</strong><button id="restorehide" class="ghost" aria-label="Hide earlier rates">Hide</button></div>
+        <div id="restorelist"></div>
+      </div>
+    </section>
+  </div>
+
   <div id="jobview">
     <div class="row">
       <h1 class="grow">Scything Pricer</h1>
       <button id="openjobs">Jobs<span id="jobcount"></span></button>
+      <button id="opensettings" aria-label="Settings">⚙ Settings</button>
     </div>
     <input id="jobname" placeholder="Job name / client" aria-label="Job name">
 
@@ -784,6 +805,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
     <section>
       <h2>Quote</h2>
+      <div class="rates" style="margin-bottom:10px">
+        <span></span><label for="callout">Call-out / travel for this job (£)</label><input id="callout" type="number" min="0" step="1">
+      </div>
       <div class="totals" id="totals"></div>
       <div class="row" style="margin-top:10px">
         <button id="copy" class="primary grow">Copy quote</button>
@@ -791,19 +815,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <textarea id="quote" hidden readonly></textarea>
     </section>
 
-    <section>
-      <h2>Your rates (£ per m²)</h2>
-      <div class="rates" id="rates"></div>
-      <div class="rates" style="margin-top:10px">
-        <span></span><label for="callout">Call-out / travel (£)</label><input id="callout" type="number" min="0" step="1">
-        <span></span><label for="minimum">Minimum charge (£)</label><input id="minimum" type="number" min="0" step="1">
-      </div>
-      <p class="muted">These rates and the minimum charge apply to every job. They only change when you edit them here. Call-out is set per job.</p>
-      <div id="restore" class="restore" hidden>
-        <div class="row"><strong class="grow">Earlier rates found on this device</strong><button id="restorehide" class="ghost" aria-label="Hide earlier rates">Hide</button></div>
-        <div id="restorelist"></div>
-      </div>
-    </section>
   </div>
 </aside>
 
@@ -1067,11 +1078,15 @@ function renderRestore() {
 $('restorehide').onclick = () => { store.restoreDismissed = true; save(false); renderRestore(); };
 
 // ---------- Saved jobs ----------
-function showJobs(open) {
-  $('jobsview').hidden = !open; $('jobview').hidden = open;
+function showView(name) {
+  for (const v of ['jobview', 'jobsview', 'settingsview']) $(v).hidden = v !== name;
   $('panel').scrollTop = 0;
-  if (open) renderJobs();
+  if (name === 'jobsview') renderJobs();
+  if (name === 'settingsview') renderRestore();
 }
+const showJobs = open => showView(open ? 'jobsview' : 'jobview');
+$('opensettings').onclick = () => showView('settingsview');
+$('closesettings').onclick = () => showView('jobview');
 let armedDelete = null;
 function renderJobs() {
   const list = store.jobs.filter(j => !isEmpty(j) || j === job).sort((a, b) => b.updated - a.updated);

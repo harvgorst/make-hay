@@ -739,6 +739,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .jobcard .jtotal { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-weight: 700; font-variant-numeric: tabular-nums; }
   .jobcard .del { align-self: center; min-width: 64px; }
   .pill { font-size: 11px; font-weight: 600; color: var(--accent-fg); background: var(--accent); border-radius: 10px; padding: 1px 7px; vertical-align: 2px; }
+  .switch { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .switch input { width: 20px; height: 20px; accent-color: var(--accent); margin: 0; }
   .restore { margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 8px; }
   [hidden] { display: none !important; }
   .restoreset { display: flex; gap: 10px; align-items: center; justify-content: space-between; font-size: 13px; font-variant-numeric: tabular-nums; }
@@ -783,6 +785,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <span></span><label for="minimum">Minimum charge (£)</label><input id="minimum" type="number" min="0" step="1">
       </div>
       <p class="muted">These apply to every job. They only change when you edit them here.</p>
+    </section>
+    <section>
+      <h2>Quote</h2>
+      <label class="switch" for="round10"><input id="round10" type="checkbox"> Round quote total to nearest £10</label>
+      <p class="muted">Only the final total is rounded. Patch prices and call-out stay exact.</p>
       <div id="restore" class="restore" hidden>
         <div class="row"><strong class="grow">Earlier rates found on this device</strong><button id="restorehide" class="ghost" aria-label="Hide earlier rates">Hide</button></div>
         <div id="restorelist"></div>
@@ -878,6 +885,7 @@ if (!validRates(store.rates)) {
   const found = (store.defaults && validRates(store.defaults.rates) && store.defaults.rates) || (newest && newest.rates);
   store.rates = found ? { ...found } : { ...FACTORY };
 }
+if (typeof store.round10 !== 'boolean') store.round10 = true;
 if (typeof store.minimum !== 'number') store.minimum = (store.defaults && +store.defaults.minimum) || 0;
 let job = store.jobs.find(j => j.id === store.currentId);
 if (!job) { job = makeJob(); store.jobs.push(job); store.currentId = job.id; }
@@ -900,8 +908,9 @@ function jobTotals(j) {
   let area = 0, sub = 0;
   for (const p of j.patches) { const a = ringArea(p.latlngs); area += a; sub += a * (store.rates[p.diff] || 0); }
   const callout = j.patches.length ? +j.callout || 0 : 0, minimum = +store.minimum || 0;
-  const total = Math.max(sub + callout, j.patches.length ? minimum : 0);
-  return { area, sub, callout, total };
+  const exact = Math.max(sub + callout, j.patches.length ? minimum : 0);
+  const total = store.round10 ? Math.round(exact / 10) * 10 : exact;   // minimum applies first, then the rounding
+  return { area, sub, callout, exact, total };
 }
 
 // ---------- Map ----------
@@ -1011,8 +1020,9 @@ function render() {
     <span>Total area</span><span>${fmtArea(t.area)} <span class="muted">(${acres(t.area)})</span></span>
     <span>Scything</span><span>${money(t.sub)}</span>
     <span>Call-out / travel</span><span>${money(t.callout)}</span>
-    <span class="muted" style="visibility:${t.total > t.sub + t.callout ? 'visible' : 'hidden'}">Minimum charge applied</span><span></span>
-    <span class="big">Total</span><span class="big">${money(t.total)}</span>`;
+    <span class="muted" style="visibility:${t.exact > t.sub + t.callout ? 'visible' : 'hidden'}">Minimum charge applied</span><span></span>
+    <span class="big">Total</span><span class="big">${money(t.total)}</span>
+    <span></span><span class="muted" style="visibility:${t.total !== t.exact ? 'visible' : 'hidden'}">Rounded from ${money(t.exact)}</span>`;
   const n = store.jobs.filter(j => !isEmpty(j) || j === job).length;
   $('jobcount').textContent = n > 1 ? ` (${n})` : '';
   panel.style.minHeight = '';
@@ -1030,6 +1040,7 @@ for (const d of DIFFS) $('r-' + d.key).oninput = e => {
   store.rates[d.key] = v; save(false); render(); renderRestore();
 };
 for (const d of DIFFS) $('r-' + d.key).onblur = e => { e.target.value = store.rates[d.key]; };
+$('round10').onchange = e => { store.round10 = e.target.checked; save(false); render(); };
 $('minimum').oninput = e => { store.minimum = readNum(e.target.value) ?? 0; save(false); render(); };
 $('callout').oninput = e => { job.callout = store.defaults.callout = readNum(e.target.value) ?? 0; save(); render(); };
 $('jobname').oninput = e => { job.name = e.target.value; save(); };
@@ -1037,6 +1048,7 @@ $('jobname').oninput = e => { job.name = e.target.value; save(); };
 function fillInputs() {
   $('jobname').value = job.name;
   for (const d of DIFFS) $('r-' + d.key).value = store.rates[d.key];
+  $('round10').checked = store.round10;
   $('minimum').value = store.minimum || '';
   $('callout').value = job.callout || '';
   $('quote').hidden = true;
@@ -1130,7 +1142,7 @@ $('copy').onclick = async () => {
   }
   lines.push('', 'Total area: ' + fmtArea(t.area) + ' (' + acres(t.area) + ')');
   if (t.callout) lines.push('Call-out / travel: ' + money(t.callout));
-  if (t.total > t.sub + t.callout) lines.push('Minimum charge applied');
+  if (t.exact > t.sub + t.callout) lines.push('Minimum charge applied');
   lines.push('TOTAL: ' + money(t.total));
   const text = lines.join('\n');
   $('quote').value = text; $('quote').hidden = false;

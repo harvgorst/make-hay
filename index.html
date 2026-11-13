@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Scythe Pricer</title>
+<title>Scything Pricer</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#2f6b3a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Scythe Pricer">
+<meta name="apple-mobile-web-app-title" content="Scything Pricer">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>/* required styles */
 
@@ -727,6 +727,17 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .rates input { width: 100%; text-align: right; }
   .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--c); }
   .totals { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-variant-numeric: tabular-nums; }
+  #jobview, #jobsview { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  #jobview[hidden], #jobsview[hidden] { display: none; }
+  #joblist { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .jobcard { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
+  .jobcard.current { border-color: var(--accent); }
+  .jobcard .open { flex: 1; min-width: 0; border: 0; background: none; text-align: left; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 10px; }
+  .jobcard .jname { font-weight: 600; overflow-wrap: anywhere; }
+  .jobcard .muted { grid-column: 1; }
+  .jobcard .jtotal { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .jobcard .del { align-self: center; min-width: 64px; }
+  .pill { font-size: 11px; font-weight: 600; color: var(--accent-fg); background: var(--accent); border-radius: 10px; padding: 1px 7px; vertical-align: 2px; }
   .totals .big { font-size: 22px; font-weight: 700; border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
   .lbl { background: rgba(0,0,0,.7); color: #fff; border: 0; box-shadow: none; font-weight: 600; font-size: 12px; text-align: center; }
   .lbl::before { display: none; }
@@ -745,34 +756,46 @@ svg.leaflet-image-layer.leaflet-interactive path {
 </div>
 
 <aside id="panel">
-  <div class="row">
-    <h1 class="grow">Scythe Pricer</h1>
-    <button id="newjob">New job</button>
+  <div id="jobsview" hidden>
+    <div class="row">
+      <h1 class="grow">Saved jobs</h1>
+      <button id="closejobs" aria-label="Back to current job">Back</button>
+    </div>
+    <button id="newjob" class="primary">＋ New job</button>
+    <div id="joblist"></div>
   </div>
-  <input id="jobname" placeholder="Job name / client" aria-label="Job name">
 
-  <section>
-    <h2>Patches</h2>
-    <div id="patches"></div>
-  </section>
-
-  <section>
-    <h2>Quote</h2>
-    <div class="totals" id="totals"></div>
-    <div class="row" style="margin-top:10px">
-      <button id="copy" class="primary grow">Copy quote</button>
+  <div id="jobview">
+    <div class="row">
+      <h1 class="grow">Scything Pricer</h1>
+      <button id="openjobs">Jobs<span id="jobcount"></span></button>
     </div>
-    <textarea id="quote" hidden readonly></textarea>
-  </section>
+    <input id="jobname" placeholder="Job name / client" aria-label="Job name">
 
-  <section>
-    <h2>Rates (£ per m²)</h2>
-    <div class="rates" id="rates"></div>
-    <div class="rates" style="margin-top:10px">
-      <span></span><label for="callout">Call-out / travel (£)</label><input id="callout" type="number" min="0" step="1">
-      <span></span><label for="minimum">Minimum charge (£)</label><input id="minimum" type="number" min="0" step="1">
-    </div>
-  </section>
+    <section>
+      <h2>Patches</h2>
+      <div id="patches"></div>
+    </section>
+
+    <section>
+      <h2>Quote</h2>
+      <div class="totals" id="totals"></div>
+      <div class="row" style="margin-top:10px">
+        <button id="copy" class="primary grow">Copy quote</button>
+      </div>
+      <textarea id="quote" hidden readonly></textarea>
+    </section>
+
+    <section>
+      <h2>Rates for this job (£ per m²)</h2>
+      <div class="rates" id="rates"></div>
+      <div class="rates" style="margin-top:10px">
+        <span></span><label for="callout">Call-out / travel (£)</label><input id="callout" type="number" min="0" step="1">
+        <span></span><label for="minimum">Minimum charge (£)</label><input id="minimum" type="number" min="0" step="1">
+      </div>
+      <p class="muted">Each job keeps its own rates, so old quotes don't change. New jobs start with the rates you last used.</p>
+    </section>
+  </div>
 </aside>
 
 <script>/* @preserve
@@ -792,16 +815,46 @@ const DIFFS = [
   { key: 'vhard',  name: 'Very hard', color: '#e0433a', rate: 0.80 },
 ];
 const D = Object.fromEntries(DIFFS.map(d => [d.key, d]));
-const KEY = 'scythe-pricer-v1';
+const KEY = 'scythe-pricer-v2', OLD_KEY = 'scythe-pricer-v1';
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const money = n => '£' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtArea = a => Math.round(a).toLocaleString('en-GB') + ' m²';
 const acres = a => (a / 4046.856).toFixed(2) + ' ac';
+const fmtDate = t => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
-let state = { job: '', rates: Object.fromEntries(DIFFS.map(d => [d.key, d.rate])), callout: 0, minimum: 0, patches: [], view: null, nextId: 1 };
-try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) state = Object.assign(state, s); } catch (e) {}
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+// ---------- Storage ----------
+// store = { defaults: {rates, callout, minimum}, jobs: [job], currentId, view, base, labels }
+// job   = { id, name, patches: [{id, name, diff, latlngs}], rates, callout, minimum, nextId, created, updated }
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+let store = { defaults: { rates: Object.fromEntries(DIFFS.map(d => [d.key, d.rate])), callout: 0, minimum: 0 },
+              jobs: [], currentId: null, view: null, base: 'sat', labels: true };
+function makeJob(name) {
+  const d = store.defaults, now = Date.now();
+  return { id: newId(), name: name || '', patches: [], rates: { ...d.rates }, callout: d.callout || 0, minimum: d.minimum || 0, nextId: 1, created: now, updated: now };
+}
+try {
+  const s = JSON.parse(localStorage.getItem(KEY));
+  if (s) store = Object.assign(store, s);
+  else {
+    const old = JSON.parse(localStorage.getItem(OLD_KEY));   // bring over the single job from the first version
+    if (old) {
+      store.defaults = { rates: { ...store.defaults.rates, ...old.rates }, callout: old.callout || 0, minimum: old.minimum || 0 };
+      store.view = old.view || null;
+      if ((old.patches && old.patches.length) || old.job) {
+        const j = makeJob(old.job); j.patches = old.patches || []; j.nextId = old.nextId || j.patches.length + 1;
+        store.jobs.push(j); store.currentId = j.id;
+      }
+    }
+  }
+} catch (e) {}
+let job = store.jobs.find(j => j.id === store.currentId);
+if (!job) { job = makeJob(); store.jobs.push(job); store.currentId = job.id; }
+const isEmpty = j => !j.patches.length && !j.name.trim();
+function save(touch = true) {
+  if (touch) job.updated = Date.now();
+  try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {}
+}
 
 // Geodesic area of a lat/lng ring, in square metres
 function ringArea(ll) {
@@ -812,18 +865,33 @@ function ringArea(ll) {
   }
   return Math.abs(a * R * R / 2);
 }
-const patchPrice = p => ringArea(p.latlngs) * (state.rates[p.diff] || 0);
+function jobTotals(j) {
+  let area = 0, sub = 0;
+  for (const p of j.patches) { const a = ringArea(p.latlngs); area += a; sub += a * (j.rates[p.diff] || 0); }
+  const callout = j.patches.length ? +j.callout || 0 : 0, minimum = +j.minimum || 0;
+  const total = Math.max(sub + callout, j.patches.length ? minimum : 0);
+  return { area, sub, callout, total };
+}
 
 // ---------- Map ----------
 const map = L.map('map', { zoomControl: true, maxZoom: 21 });
-const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  { maxNativeZoom: 19, maxZoom: 21, attribution: 'Imagery © Esri, Maxar, Earthstar Geographics' }).addTo(map);
+const esri = (path, attribution) => L.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/${path}/MapServer/tile/{z}/{y}/{x}`,
+  { maxNativeZoom: 19, maxZoom: 21, attribution });
+const sat = esri('World_Imagery', 'Imagery © Esri, Maxar, Earthstar Geographics');
 const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   { maxNativeZoom: 19, maxZoom: 21, attribution: '© OpenStreetMap contributors' });
-L.control.layers({ Satellite: sat, Street: osm }, null, { position: 'bottomleft' }).addTo(map);
+const labels = L.layerGroup([
+  esri('Reference/World_Transportation', 'Roads © Esri'),
+  esri('Reference/World_Boundaries_and_Places', 'Places © Esri'),
+]);
+(store.base === 'osm' ? osm : sat).addTo(map);
+if (store.labels) labels.addTo(map);
+L.control.layers({ Satellite: sat, Street: osm }, { 'Roads & place names': labels }, { position: 'bottomleft' }).addTo(map);
+map.on('baselayerchange', e => { store.base = e.layer === osm ? 'osm' : 'sat'; save(false); });
+map.on('overlayadd overlayremove', e => { if (e.layer === labels) { store.labels = e.type === 'overlayadd'; save(false); } });
 L.control.scale({ imperial: false }).addTo(map);
-if (state.view) map.setView(state.view.c, state.view.z); else map.setView([54.2, -2.5], 6);
-map.on('moveend', () => { const c = map.getCenter(); state.view = { c: [c.lat, c.lng], z: map.getZoom() }; save(); });
+if (store.view) map.setView(store.view.c, store.view.z); else map.setView([54.2, -2.5], 6);
+map.on('moveend', () => { const c = map.getCenter(); store.view = { c: [c.lat, c.lng], z: map.getZoom() }; save(false); });
 
 const SNAP = 8;   // pixels within which a corner snaps to another patch's edge or corner (library default is 20)
 map.pm.setGlobalOptions({ snapDistance: SNAP });
@@ -844,6 +912,9 @@ function addLayer(p) {
   layer.on('pm:edit pm:markerdrag pm:markerdragend pm:vertexadded pm:vertexremoved', sync);
   layers[p.id] = layer;
 }
+function clearLayers() {
+  for (const k in layers) { layers[k].pm.disable(); layers[k].remove(); delete layers[k]; }
+}
 function select(id) {
   selected = id;
   for (const [pid, layer] of Object.entries(layers)) {
@@ -855,6 +926,7 @@ map.on('click', () => { if (!drawing && selected !== null) select(null); });
 
 // Drawing
 function setHint(t) { $('hint').textContent = t || ''; $('hint').hidden = !t; }
+function flash(t) { setHint(t); setTimeout(() => { if (!drawing) setHint(''); }, 3000); }
 $('draw').onclick = () => {
   if (drawing) { map.pm.disableDraw(); return; }
   select(null);
@@ -865,21 +937,19 @@ map.on('pm:drawend', () => { drawing = false; $('draw').textContent = '＋ Draw 
 map.on('pm:create', e => {
   const latlngs = e.layer.getLatLngs()[0].map(l => [l.lat, l.lng]);
   e.layer.remove();
-  const p = { id: state.nextId++, name: 'Patch ' + (state.patches.length + 1), diff: 'medium', latlngs };
-  state.patches.push(p); addLayer(p); save();
+  const p = { id: job.nextId++, name: 'Patch ' + (job.patches.length + 1), diff: 'medium', latlngs };
+  job.patches.push(p); addLayer(p); save();
   setTimeout(() => select(p.id), 0);
 });
 
-// ---------- Panel ----------
+// ---------- Current job panel ----------
 function render() {
   const panel = $('panel'), keepScroll = panel.scrollTop, keepPage = window.scrollY;
   panel.style.minHeight = panel.offsetHeight + 'px';   // stop the list rebuild collapsing the panel
-  let area = 0, sub = 0;
-  $('patches').innerHTML = state.patches.length ? '' :
+  $('patches').innerHTML = job.patches.length ? '' :
     '<p class="muted">No patches yet. Find the site on the map, press <b>＋ Draw patch</b> and tap round the edge of the area.</p>';
-  for (const p of state.patches) {
-    const a = ringArea(p.latlngs), price = a * (state.rates[p.diff] || 0);
-    area += a; sub += price;
+  for (const p of job.patches) {
+    const a = ringArea(p.latlngs), price = a * (job.rates[p.diff] || 0);
     const layer = layers[p.id];
     layer.setStyle(styleFor(p));
     layer.setTooltipContent(esc(p.name) + '<br>' + fmtArea(a));
@@ -899,54 +969,100 @@ function render() {
     el.querySelector('select').onchange = ev => { p.diff = ev.target.value; save(); render(); };
     el.querySelector('button').onclick = () => {
       layers[p.id].remove(); delete layers[p.id];
-      state.patches = state.patches.filter(x => x !== p);
+      job.patches = job.patches.filter(x => x !== p);
       if (selected === p.id) selected = null;
       save(); render();
     };
     $('patches').appendChild(el);
   }
-  const callout = state.patches.length ? +state.callout || 0 : 0, minimum = +state.minimum || 0;
-  const total = Math.max(sub + callout, state.patches.length ? minimum : 0);
+  const t = jobTotals(job);
   $('totals').innerHTML = `
-    <span>Total area</span><span>${fmtArea(area)} <span class="muted">(${acres(area)})</span></span>
-    <span>Scything</span><span>${money(sub)}</span>
-    <span>Call-out / travel</span><span>${money(callout)}</span>
-    <span class="muted" style="visibility:${total > sub + callout ? 'visible' : 'hidden'}">Minimum charge applied</span><span></span>
-    <span class="big">Total</span><span class="big">${money(total)}</span>`;
+    <span>Total area</span><span>${fmtArea(t.area)} <span class="muted">(${acres(t.area)})</span></span>
+    <span>Scything</span><span>${money(t.sub)}</span>
+    <span>Call-out / travel</span><span>${money(t.callout)}</span>
+    <span class="muted" style="visibility:${t.total > t.sub + t.callout ? 'visible' : 'hidden'}">Minimum charge applied</span><span></span>
+    <span class="big">Total</span><span class="big">${money(t.total)}</span>`;
+  const n = store.jobs.filter(j => !isEmpty(j) || j === job).length;
+  $('jobcount').textContent = n > 1 ? ` (${n})` : '';
   panel.style.minHeight = '';
   panel.scrollTop = keepScroll;
   if (window.scrollY !== keepPage) window.scrollTo(0, keepPage);
-  return { area, sub, callout, total };
+  return t;
 }
 
-// Rates
+// Rates, call-out and minimum belong to the job; edits also become the starting values for new jobs
 $('rates').innerHTML = DIFFS.map(d =>
-  `<span class="dot" style="--c:${d.color}"></span><label for="r-${d.key}">${d.name}</label><input id="r-${d.key}" type="number" min="0" step="0.01" value="${state.rates[d.key]}">`).join('');
-for (const d of DIFFS) $('r-' + d.key).oninput = e => { state.rates[d.key] = +e.target.value || 0; save(); render(); };
-for (const k of ['callout', 'minimum']) { $(k).value = state[k] || ''; $(k).oninput = e => { state[k] = +e.target.value || 0; save(); render(); }; }
-$('jobname').value = state.job; $('jobname').oninput = e => { state.job = e.target.value; save(); };
+  `<span class="dot" style="--c:${d.color}"></span><label for="r-${d.key}">${d.name}</label><input id="r-${d.key}" type="number" min="0" step="0.01">`).join('');
+for (const d of DIFFS) $('r-' + d.key).oninput = e => {
+  job.rates[d.key] = store.defaults.rates[d.key] = +e.target.value || 0; save(); render();
+};
+for (const k of ['callout', 'minimum']) $(k).oninput = e => { job[k] = store.defaults[k] = +e.target.value || 0; save(); render(); };
+$('jobname').oninput = e => { job.name = e.target.value; save(); };
 
-// New job (two-step confirm)
-let armed = null;
-$('newjob').onclick = () => {
-  if (state.patches.length && !armed) {
-    $('newjob').textContent = 'Clear all patches?';
-    armed = setTimeout(() => { armed = null; $('newjob').textContent = 'New job'; }, 3000);
-    return;
+function fillInputs() {
+  $('jobname').value = job.name;
+  for (const d of DIFFS) $('r-' + d.key).value = job.rates[d.key] ?? '';
+  for (const k of ['callout', 'minimum']) $(k).value = job[k] || '';
+  $('quote').hidden = true;
+}
+function loadJob(j, fit = true) {
+  if (drawing) map.pm.disableDraw();
+  selected = null; clearLayers();
+  // drop an untouched blank job instead of leaving it in the list
+  if (job !== j && isEmpty(job)) store.jobs = store.jobs.filter(x => x !== job);
+  job = j; store.currentId = j.id;
+  job.patches.forEach(addLayer);
+  fillInputs(); save(false); render();
+  if (fit && job.patches.length) map.fitBounds(L.featureGroup(Object.values(layers)).getBounds(), { maxZoom: 19, padding: [30, 30] });
+}
+
+// ---------- Saved jobs ----------
+function showJobs(open) {
+  $('jobsview').hidden = !open; $('jobview').hidden = open;
+  $('panel').scrollTop = 0;
+  if (open) renderJobs();
+}
+let armedDelete = null;
+function renderJobs() {
+  const list = store.jobs.filter(j => !isEmpty(j) || j === job).sort((a, b) => b.updated - a.updated);
+  $('joblist').innerHTML = '';
+  for (const j of list) {
+    const t = jobTotals(j);
+    const el = document.createElement('div');
+    el.className = 'jobcard' + (j === job ? ' current' : '');
+    el.innerHTML = `
+      <button class="open" aria-label="Open ${esc(j.name || 'Untitled job')}">
+        <span class="jname">${esc(j.name || 'Untitled job')}${j === job ? ' <span class="pill">Open</span>' : ''}</span>
+        <span class="muted">${fmtDate(j.updated)} · ${j.patches.length} patch${j.patches.length === 1 ? '' : 'es'} · ${fmtArea(t.area)}</span>
+        <span class="jtotal">${money(t.total)}</span>
+      </button>
+      <button class="ghost del">${armedDelete === j.id ? 'Delete?' : '✕'}</button>`;
+    el.querySelector('.open').onclick = () => { if (j !== job) loadJob(j); showJobs(false); };
+    el.querySelector('.del').onclick = () => {
+      if (armedDelete !== j.id) { armedDelete = j.id; renderJobs(); setTimeout(() => { if (armedDelete === j.id) { armedDelete = null; renderJobs(); } }, 3000); return; }
+      armedDelete = null;
+      store.jobs = store.jobs.filter(x => x !== j);
+      if (j === job) { const next = makeJob(); store.jobs.push(next); job = next; loadJob(next, false); }
+      save(false); render(); renderJobs();
+    };
+    $('joblist').appendChild(el);
   }
-  clearTimeout(armed); armed = null; $('newjob').textContent = 'New job';
-  Object.values(layers).forEach(l => l.remove());
-  for (const k in layers) delete layers[k];
-  state.patches = []; state.job = ''; state.nextId = 1; selected = null; $('jobname').value = '';
-  save(); render();
+}
+$('openjobs').onclick = () => showJobs(true);
+$('closejobs').onclick = () => showJobs(false);
+$('newjob').onclick = () => {
+  if (isEmpty(job)) { showJobs(false); $('jobname').focus(); return; }
+  const j = makeJob(); store.jobs.push(j); loadJob(j, false); showJobs(false); $('jobname').focus();
 };
 
 // Copy quote
 $('copy').onclick = async () => {
   const t = render();
-  const lines = [state.job ? 'Scything quote: ' + state.job : 'Scything quote', ''];
-  for (const p of state.patches)
-    lines.push(`${p.name} - ${D[p.diff].name} - ${fmtArea(ringArea(p.latlngs))} @ £${(+state.rates[p.diff]).toFixed(2)}/m² = ${money(patchPrice(p))}`);
+  const lines = [job.name ? 'Scything quote: ' + job.name : 'Scything quote', ''];
+  for (const p of job.patches) {
+    const a = ringArea(p.latlngs);
+    lines.push(`${p.name} - ${D[p.diff].name} - ${fmtArea(a)} @ £${(+job.rates[p.diff]).toFixed(2)}/m² = ${money(a * (job.rates[p.diff] || 0))}`);
+  }
   lines.push('', 'Total area: ' + fmtArea(t.area) + ' (' + acres(t.area) + ')');
   if (t.callout) lines.push('Call-out / travel: ' + money(t.callout));
   if (t.total > t.sub + t.callout) lines.push('Minimum charge applied');
@@ -969,15 +1085,13 @@ $('search').onsubmit = async e => {
     const j = await r.json();
     if (!j.length) throw 0;
     map.setView([+j[0].lat, +j[0].lon], 18);
-  } catch (err) { setHint('Could not find "' + q + '"'); setTimeout(() => { if (!drawing) setHint(''); }, 3000); }
+  } catch (err) { flash('Could not find "' + q + '"'); }
 };
 $('locate').onclick = () => map.locate({ setView: true, maxZoom: 19 });
-map.on('locationerror', () => { setHint('Location unavailable'); setTimeout(() => { if (!drawing) setHint(''); }, 3000); });
+map.on('locationerror', () => flash('Location unavailable'));
 
-state.patches.forEach(addLayer);
-render();
+loadJob(job, !store.view);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
-if (state.patches.length && !state.view) map.fitBounds(L.featureGroup(Object.values(layers)).getBounds());
 </script>
 </body>
 </html>

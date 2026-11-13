@@ -1,6 +1,6 @@
 {
-  "name": "Scythe Pricer",
-  "short_name": "Scythe Pricer",
+  "name": "Scything Pricer",
+  "short_name": "Scything Pricer",
   "description": "Draw patches on a satellite map and price scything work by area and difficulty.",
   "start_url": "./",
   "scope": "./",

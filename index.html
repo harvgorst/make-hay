@@ -739,6 +739,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .jobcard .jtotal { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-weight: 700; font-variant-numeric: tabular-nums; }
   .jobcard .del { align-self: center; min-width: 64px; }
   .pill { font-size: 11px; font-weight: 600; color: var(--accent-fg); background: var(--accent); border-radius: 10px; padding: 1px 7px; vertical-align: 2px; }
+  .travelnote { margin: 0 0 10px; }
+  .travelnote a { color: var(--accent); cursor: pointer; text-decoration: underline; }
+  .homelabel { margin: 0 0 8px; }
+  .home-pin { font-size: 22px; line-height: 28px; text-align: center; background: #fff; color: #2f6b3a; border: 2px solid #2f6b3a; border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
   .switch { display: flex; align-items: center; gap: 10px; cursor: pointer; }
   .switch input { width: 20px; height: 20px; accent-color: var(--accent); margin: 0; }
   .restore { margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 8px; }
@@ -787,9 +791,27 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <p class="muted">These apply to every job. They only change when you edit them here.</p>
     </section>
     <section>
+      <h2>Home / base</h2>
+      <p id="homelabel" class="homelabel"></p>
+      <form id="homesearch" class="row">
+        <input id="homeq" class="grow" placeholder="Home address or postcode" aria-label="Home address or postcode">
+        <button>Set</button>
+      </form>
+      <div class="row" style="margin-top:8px"><button id="homecentre" class="grow">Use map centre as home</button></div>
+    </section>
+    <section>
+      <h2>Travel</h2>
+      <div class="rates">
+        <span></span><label for="permile">Travel rate (£ per mile)</label><input id="permile" type="number" min="0" step="0.01">
+        <span></span><label for="freemiles">Free within (miles)</label><input id="freemiles" type="number" min="0" step="1">
+      </div>
+      <label class="switch" for="returntrip" style="margin-top:10px"><input id="returntrip" type="checkbox"> Count return journey</label>
+      <p class="muted">Driving distance from home to the middle of the job. Miles beyond the free distance are charged, each way when the return journey is counted.</p>
+    </section>
+    <section>
       <h2>Quote</h2>
       <label class="switch" for="round10"><input id="round10" type="checkbox"> Round quote total to nearest £10</label>
-      <p class="muted">Only the final total is rounded. Patch prices and call-out stay exact.</p>
+      <p class="muted">Only the final total is rounded. Patch prices and travel stay exact.</p>
       <div id="restore" class="restore" hidden>
         <div class="row"><strong class="grow">Earlier rates found on this device</strong><button id="restorehide" class="ghost" aria-label="Hide earlier rates">Hide</button></div>
         <div id="restorelist"></div>
@@ -813,8 +835,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <section>
       <h2>Quote</h2>
       <div class="rates" style="margin-bottom:10px">
-        <span></span><label for="callout">Call-out / travel for this job (£)</label><input id="callout" type="number" min="0" step="1">
+        <span></span><label for="callout">Travel for this job (£)</label><input id="callout" type="number" min="0" step="0.01">
       </div>
+      <p class="muted travelnote" id="travelnote"></p>
       <div class="totals" id="totals"></div>
       <div class="row" style="margin-top:10px">
         <button id="copy" class="primary grow">Copy quote</button>
@@ -851,8 +874,8 @@ const acres = a => (a / 4046.856).toFixed(2) + ' ac';
 const fmtDate = t => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 // ---------- Storage ----------
-// store = { rates, minimum, defaults: {callout}, jobs: [job], currentId, view, base, labels }
-// job   = { id, name, patches: [{id, name, diff, latlngs}], callout, nextId, created, updated }
+// store = { rates, minimum, round10, home: {lat, lng, label}, travel: {perMile, freeMiles, returnTrip}, jobs: [job], currentId, view, base, labels }
+// job   = { id, name, patches: [{id, name, diff, latlngs}], travelOverride: £|null, route: {key, miles, approx}, nextId, created, updated }
 // Rates and the minimum charge are one set shared by every job. Nothing but typing in the Rates boxes changes them.
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const FACTORY = Object.fromEntries(DIFFS.map(d => [d.key, d.rate]));
@@ -860,7 +883,7 @@ let store = { rates: null, minimum: null, defaults: { callout: 0 },
               jobs: [], currentId: null, view: null, base: 'sat', labels: true };
 function makeJob(name) {
   const d = store.defaults, now = Date.now();
-  return { id: newId(), name: name || '', patches: [], callout: d.callout || 0, nextId: 1, created: now, updated: now };
+  return { id: newId(), name: name || '', patches: [], travelOverride: null, route: null, nextId: 1, created: now, updated: now };
 }
 try {
   const s = JSON.parse(localStorage.getItem(KEY));
@@ -872,7 +895,7 @@ try {
       store.defaults = { callout: old.callout || 0 };
       store.view = old.view || null;
       if ((old.patches && old.patches.length) || old.job) {
-        const j = makeJob(old.job); j.patches = old.patches || []; j.nextId = old.nextId || j.patches.length + 1;
+        const j = makeJob(old.job); j.patches = old.patches || []; j.travelOverride = +old.callout > 0 ? +old.callout : null; j.nextId = old.nextId || j.patches.length + 1;
         store.jobs.push(j); store.currentId = j.id;
       }
     }
@@ -886,6 +909,10 @@ if (!validRates(store.rates)) {
   store.rates = found ? { ...found } : { ...FACTORY };
 }
 if (typeof store.round10 !== 'boolean') store.round10 = true;
+store.travel = Object.assign({ perMile: 0.45, freeMiles: 5, returnTrip: true }, store.travel);
+if (store.home === undefined) store.home = null;
+// Earlier versions had a typed call-out per job: keep any amount already entered as that job's travel figure
+for (const j of store.jobs) if (!('travelOverride' in j)) { j.travelOverride = +j.callout > 0 ? +j.callout : null; delete j.callout; }
 if (typeof store.minimum !== 'number') store.minimum = (store.defaults && +store.defaults.minimum) || 0;
 let job = store.jobs.find(j => j.id === store.currentId);
 if (!job) { job = makeJob(); store.jobs.push(job); store.currentId = job.id; }
@@ -907,10 +934,57 @@ function ringArea(ll) {
 function jobTotals(j) {
   let area = 0, sub = 0;
   for (const p of j.patches) { const a = ringArea(p.latlngs); area += a; sub += a * (store.rates[p.diff] || 0); }
-  const callout = j.patches.length ? +j.callout || 0 : 0, minimum = +store.minimum || 0;
+  const callout = j.patches.length ? travelFor(j).cost : 0, minimum = +store.minimum || 0;
   const exact = Math.max(sub + callout, j.patches.length ? minimum : 0);
   const total = store.round10 ? Math.round(exact / 10) * 10 : exact;   // minimum applies first, then the rounding
   return { area, sub, callout, exact, total };
+}
+
+// ---------- Travel ----------
+const retried = new Set();
+const MILE = 1609.344;
+function haversine(a, b) {
+  const R = 6371008.8, d = Math.PI / 180, dLat = (b[0] - a[0]) * d, dLng = (b[1] - a[1]) * d;
+  const s = Math.sin(dLat / 2) ** 2 + Math.cos(a[0] * d) * Math.cos(b[0] * d) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+function jobCentre(j) {
+  let s = 90, n = -90, w = 180, e = -180;
+  for (const p of j.patches) for (const [la, ln] of p.latlngs) { s = Math.min(s, la); n = Math.max(n, la); w = Math.min(w, ln); e = Math.max(e, ln); }
+  return [(s + n) / 2, (w + e) / 2];
+}
+// A route is reused until home or the middle of the job moves by roughly 100 m
+const routeKey = (home, c) => [home.lat, home.lng, c[0], c[1]].map(v => v.toFixed(3)).join(',');
+function travelFor(j) {
+  const t = store.travel, out = { cost: 0, miles: null, approx: false, override: j.travelOverride != null, nohome: !store.home };
+  if (!j.patches.length) return out;
+  if (store.home) {
+    const c = jobCentre(j), key = routeKey(store.home, c);
+    // a straight-line fallback gets one more try at a proper route each time the app is opened
+    if (j.route && j.route.key === key && !(j.route.approx && !retried.has(key))) { out.miles = j.route.miles; out.approx = j.route.approx; }
+    else { out.miles = haversine([store.home.lat, store.home.lng], c) * 1.3 / MILE; out.approx = true; out.pending = true; out.key = key; out.centre = c; }
+    out.charged = Math.max(0, out.miles - (+t.freeMiles || 0)) * (t.returnTrip ? 2 : 1);
+    out.estimate = out.charged * (+t.perMile || 0);
+  }
+  out.cost = out.override ? +j.travelOverride : (out.estimate || 0);
+  return out;
+}
+const routing = new Set();
+async function fetchRoute(j) {
+  const tr = travelFor(j);
+  if (!tr.pending || routing.has(tr.key)) return;
+  routing.add(tr.key);
+  let miles = tr.miles, approx = true;
+  try {
+    const h = store.home, c = tr.centre;
+    const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${h.lng},${h.lat};${c[1]},${c[0]}?overview=false`);
+    const d = await r.json();
+    if (d.code === 'Ok' && d.routes && d.routes[0]) { miles = d.routes[0].distance / MILE; approx = false; }
+  } catch (e) {}
+  routing.delete(tr.key); retried.add(tr.key);
+  j.route = { key: tr.key, miles, approx };
+  save(false);
+  if (j === job) render();
 }
 
 // ---------- Map ----------
@@ -932,6 +1006,13 @@ map.on('overlayadd overlayremove', e => { if (e.layer === labels) { store.labels
 L.control.scale({ imperial: false }).addTo(map);
 if (store.view) map.setView(store.view.c, store.view.z); else map.setView([54.2, -2.5], 6);
 map.on('moveend', () => { const c = map.getCenter(); store.view = { c: [c.lat, c.lng], z: map.getZoom() }; save(false); });
+
+let homeMarker = null;
+function drawHome() {
+  if (homeMarker) { homeMarker.remove(); homeMarker = null; }
+  if (store.home) homeMarker = L.marker([store.home.lat, store.home.lng], {
+    icon: L.divIcon({ className: 'home-pin', html: '⌂', iconSize: [30, 30] }), keyboard: false, interactive: false }).addTo(map);
+}
 
 const SNAP = 8;   // pixels within which a corner snaps to another patch's edge or corner (library default is 20)
 map.pm.setGlobalOptions({ snapDistance: SNAP });
@@ -1019,10 +1100,11 @@ function render() {
   $('totals').innerHTML = `
     <span>Total area</span><span>${fmtArea(t.area)} <span class="muted">(${acres(t.area)})</span></span>
     <span>Scything</span><span>${money(t.sub)}</span>
-    <span>Call-out / travel</span><span>${money(t.callout)}</span>
+    <span>Travel</span><span>${money(t.callout)}</span>
     <span class="muted" style="visibility:${t.exact > t.sub + t.callout ? 'visible' : 'hidden'}">Minimum charge applied</span><span></span>
     <span class="big">Total</span><span class="big">${money(t.total)}</span>
     <span></span><span class="muted" style="visibility:${t.total !== t.exact ? 'visible' : 'hidden'}">Rounded from ${money(t.exact)}</span>`;
+  renderTravel();
   const n = store.jobs.filter(j => !isEmpty(j) || j === job).length;
   $('jobcount').textContent = n > 1 ? ` (${n})` : '';
   panel.style.minHeight = '';
@@ -1040,9 +1122,50 @@ for (const d of DIFFS) $('r-' + d.key).oninput = e => {
   store.rates[d.key] = v; save(false); render(); renderRestore();
 };
 for (const d of DIFFS) $('r-' + d.key).onblur = e => { e.target.value = store.rates[d.key]; };
+for (const [id, k] of [['permile', 'perMile'], ['freemiles', 'freeMiles']]) {
+  $(id).oninput = e => { const v = readNum(e.target.value); if (v === null) return; store.travel[k] = v; save(false); render(); };
+  $(id).onblur = e => { e.target.value = store.travel[k]; };
+}
+$('returntrip').onchange = e => { store.travel.returnTrip = e.target.checked; save(false); render(); };
+function homeLabel() {
+  $('homelabel').innerHTML = store.home ? '⌂ ' + esc(store.home.label) : '<span class="muted">No home set yet.</span>';
+}
+function setHome(lat, lng, label) {
+  store.home = { lat, lng, label }; save(false); drawHome(); homeLabel(); render();
+}
+$('homecentre').onclick = () => { const c = map.getCenter(); setHome(c.lat, c.lng, 'Map point ' + c.lat.toFixed(5) + ', ' + c.lng.toFixed(5)); };
+$('homesearch').onsubmit = async e => {
+  e.preventDefault();
+  const q = $('homeq').value.trim(); if (!q) return;
+  try {
+    const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q));
+    const j = await r.json(); if (!j.length) throw 0;
+    setHome(+j[0].lat, +j[0].lon, j[0].display_name.split(',').slice(0, 3).join(','));
+    $('homeq').value = '';
+    map.setView([+j[0].lat, +j[0].lon], 16);
+  } catch (err) { $('homelabel').innerHTML = 'Could not find "' + esc(q) + '". Try a postcode, or move the map there and use the map centre.'; }
+};
 $('round10').onchange = e => { store.round10 = e.target.checked; save(false); render(); };
 $('minimum').oninput = e => { store.minimum = readNum(e.target.value) ?? 0; save(false); render(); };
-$('callout').oninput = e => { job.callout = store.defaults.callout = readNum(e.target.value) ?? 0; save(); render(); };
+$('callout').oninput = e => { job.travelOverride = readNum(e.target.value); save(); render(); };
+const miles = m => m.toFixed(1) + ' mile' + (m.toFixed(1) === '1.0' ? '' : 's');
+function renderTravel() {
+  const tr = travelFor(job), t = store.travel, note = $('travelnote');
+  if (document.activeElement !== $('callout')) $('callout').value = tr.override ? job.travelOverride : (tr.estimate != null && job.patches.length ? tr.estimate.toFixed(2) : '');
+  let s = '';
+  if (!job.patches.length) s = '';
+  else if (tr.nohome) s = 'Set your home in ⚙ Settings to estimate travel.';
+  else {
+    const dist = (tr.approx ? 'about ' : '') + miles(tr.miles) + ' each way' + (tr.pending ? ' (checking route…)' : tr.approx ? ' (straight-line estimate)' : '');
+    s = tr.charged > 0
+      ? `${dist}. ${t.freeMiles ? 'First ' + t.freeMiles + ' free, so ' : ''}${miles(tr.charged)} charged${t.returnTrip ? ' (there and back)' : ''} @ £${(+t.perMile).toFixed(2)}/mile = ${money(tr.estimate)}.`
+      : `${dist}. Within the free ${t.freeMiles} miles.`;
+    if (tr.override) s += ` You've entered ${money(+job.travelOverride)}. <a id="useestimate">Use estimate</a>`;
+  }
+  note.innerHTML = s; note.hidden = !s;
+  const u = $('useestimate'); if (u) u.onclick = () => { job.travelOverride = null; save(); render(); };
+  if (tr.pending) fetchRoute(job);
+}
 $('jobname').oninput = e => { job.name = e.target.value; save(); };
 
 function fillInputs() {
@@ -1050,7 +1173,8 @@ function fillInputs() {
   for (const d of DIFFS) $('r-' + d.key).value = store.rates[d.key];
   $('round10').checked = store.round10;
   $('minimum').value = store.minimum || '';
-  $('callout').value = job.callout || '';
+  $('permile').value = store.travel.perMile; $('freemiles').value = store.travel.freeMiles; $('returntrip').checked = store.travel.returnTrip;
+  homeLabel();
   $('quote').hidden = true;
 }
 function loadJob(j, fit = true) {
@@ -1141,7 +1265,8 @@ $('copy').onclick = async () => {
     lines.push(`${p.name} - ${D[p.diff].name} - ${fmtArea(a)} @ £${(+store.rates[p.diff]).toFixed(2)}/m² = ${money(a * (store.rates[p.diff] || 0))}`);
   }
   lines.push('', 'Total area: ' + fmtArea(t.area) + ' (' + acres(t.area) + ')');
-  if (t.callout) lines.push('Call-out / travel: ' + money(t.callout));
+  const tr = travelFor(job);
+  if (t.callout) lines.push((tr.override || tr.miles == null ? 'Travel' : `Travel (${miles(tr.charged)})`) + ': ' + money(t.callout));
   if (t.exact > t.sub + t.callout) lines.push('Minimum charge applied');
   lines.push('TOTAL: ' + money(t.total));
   const text = lines.join('\n');
@@ -1167,6 +1292,7 @@ $('search').onsubmit = async e => {
 $('locate').onclick = () => map.locate({ setView: true, maxZoom: 19 });
 map.on('locationerror', () => flash('Location unavailable'));
 
+drawHome();
 loadJob(job, !store.view);
 renderRestore();
 save(false);

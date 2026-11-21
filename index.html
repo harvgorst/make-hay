@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
-<meta name="theme-color" content="#2f6b3a">
+<meta name="theme-color" content="#3F5C2F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Scything Pricer">
@@ -678,91 +678,197 @@ svg.leaflet-image-layer.leaflet-interactive path {
 /*# sourceMappingURL=leaflet-geoman.css.map */
 </style>
 <style>
+  /* Layout: map fills the screen; on phones the job panel is a rounded sheet rising from the bottom, on wider screens a column on the right.
+     The quote total is pinned to the bottom of the panel so the price is always in view. */
   :root {
-    --bg: #f6f7f2; --panel: #ffffff; --fg: #1d2a1f; --muted: #667066; --line: #dde2d8;
-    --accent: #2f6b3a; --accent-fg: #ffffff; --danger: #b3372f;
-    --easy: #4caf50; --medium: #e6b800; --hard: #f08a24; --vhard: #e0433a;
+    --ground: #DDE2D3;      /* behind the map */
+    --paper: #EDF0E6;       /* panel: lichen grey-green, softer than white in sun */
+    --card: #F8F9F3;
+    --ink: #1F261C;
+    --muted: #535D4E;
+    --line: #D3D8C9;
+    --edge: #7F8875;        /* outline of things you type into: 3:1 against cards */
+    --moss: #3F5C2F;        /* the one accent: hedgerow moss */
+    --moss-ink: #F3F6EC;
+    --moss-soft: #DCE5CF;
+    --danger: #9E3A2D;
+    --shadow: 0 2px 12px rgb(24 34 18 / .16);
+    --display: "Bricolage Grotesque", "Figtree", system-ui, sans-serif;
+    --body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --sheet-overlap: 0px;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #141a15; --panel: #1c241d; --fg: #e8eee6; --muted: #9aa69a; --line: #2f3a30;
-            --accent: #6fbf7c; --accent-fg: #0f1a11; --danger: #ef7a70; color-scheme: dark; }
+    :root {
+      --ground: #121611; --paper: #1B2019; --card: #252B22; --ink: #E6EADF; --muted: #A5AE9B;
+      --line: #353D31; --edge: #79836E; --moss: #A9C98C; --moss-ink: #16200F; --moss-soft: #2E3A26;
+      --danger: #EC9284; --shadow: 0 2px 14px rgb(0 0 0 / .45); color-scheme: dark;
+    }
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
-  body { font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg);
-         display: grid; grid-template-columns: 1fr 380px; height: 100dvh; }
+  body { font: 16px/1.45 var(--body); background: var(--ground); color: var(--ink);
+         display: grid; grid-template-columns: 1fr 400px; height: 100dvh; overflow: hidden; }
   #mapwrap { position: relative; min-height: 0; }
-  #map { position: absolute; inset: 0; }
-  #panel { background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 18px; }
+  #map { position: absolute; inset: 0; background: var(--ground); }
+  #panel { position: relative; z-index: 500; background: var(--paper); display: flex; flex-direction: column; min-height: 0;
+           overflow-y: auto; overscroll-behavior: contain; box-shadow: -1px 0 0 var(--line); }
   @media (max-width: 800px) {
-    body { grid-template-columns: 1fr; grid-template-rows: 52dvh 1fr; }
-    #panel { border-left: 0; border-top: 1px solid var(--line); }
+    :root { --sheet-overlap: 20px; }
+    body { grid-template-columns: 1fr; grid-template-rows: 50dvh 1fr; }
+    #panel { margin-top: calc(-1 * var(--sheet-overlap)); border-radius: 20px 20px 0 0; box-shadow: 0 -4px 18px rgb(24 34 18 / .18); }
+    .leaflet-bottom { bottom: var(--sheet-overlap); }
+    body.drawing { grid-template-rows: 80dvh 1fr; }   /* more map to draw on while drawing */
   }
-  h1 { font-size: 18px; margin: 0; }
-  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 8px; }
-  button, input, select { font: inherit; color: inherit; }
-  button { cursor: pointer; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 8px 12px; }
-  button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
-  button.ghost { border: 0; padding: 4px 8px; color: var(--danger); background: none; }
-  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-  input, select { border: 1px solid var(--line); background: var(--bg); border-radius: 6px; padding: 6px 8px; min-width: 0; }
-  .row { display: flex; gap: 8px; align-items: center; }
-  .row > .grow { flex: 1; }
-  .toolbar { position: absolute; z-index: 1000; top: calc(10px + env(safe-area-inset-top, 0px)); left: 54px; right: 10px; display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
-  .toolbar > * { pointer-events: auto; box-shadow: 0 1px 4px rgba(0,0,0,.35); }
-  .toolbar form { display: flex; flex: 1 1 180px; max-width: 340px; }
-  .toolbar input { flex: 1; background: var(--panel); border-radius: 8px 0 0 8px; border-right: 0; padding: 8px 10px; }
-  .toolbar form button { border-radius: 0 8px 8px 0; }
-  #hint { position: absolute; z-index: 1000; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.75); color: #fff;
-          padding: 8px 14px; border-radius: 20px; font-size: 13px; max-width: 90%; text-align: center; }
-  .patch { border: 1px solid var(--line); border-left: 6px solid var(--c); border-radius: 8px; padding: 10px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; cursor: pointer; }
-  .patch.sel { border-color: var(--accent); border-left-color: var(--c); box-shadow: 0 0 0 1px var(--accent); }
-  .patch .nums { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
-  .patch .price { font-weight: 700; }
-  .muted { color: var(--muted); font-size: 13px; }
-  #patches { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
-  #panel > * { min-width: 0; }
-  .patch .row select { flex: none; }
-  .rates { display: grid; grid-template-columns: 14px 1fr 96px; gap: 6px 8px; align-items: center; }
-  .rates input { width: 100%; text-align: right; }
-  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--c); }
-  .totals { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-variant-numeric: tabular-nums; }
-  #jobview, #jobsview { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
-  #jobview[hidden], #jobsview[hidden], #settingsview[hidden] { display: none; }
-  #settingsview { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
-  #joblist { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
-  .jobcard { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
-  .jobcard.current { border-color: var(--accent); }
-  .jobcard .open { flex: 1; min-width: 0; border: 0; background: none; text-align: left; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 10px; }
-  .jobcard .jname { font-weight: 600; overflow-wrap: anywhere; }
-  .jobcard .muted { grid-column: 1; }
-  .jobcard .jtotal { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .jobcard .del { align-self: center; min-width: 64px; }
-  .pill { font-size: 11px; font-weight: 600; color: var(--accent-fg); background: var(--accent); border-radius: 10px; padding: 1px 7px; vertical-align: 2px; }
-  .travelnote { margin: 0 0 10px; }
-  .travelnote a { color: var(--accent); cursor: pointer; text-decoration: underline; }
-  .homelabel { margin: 0 0 8px; }
-  .home-pin { font-size: 22px; line-height: 28px; text-align: center; background: #fff; color: #2f6b3a; border: 2px solid #2f6b3a; border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
-  .switch { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-  .switch input { width: 20px; height: 20px; accent-color: var(--accent); margin: 0; }
-  .restore { margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 8px; }
+  #panel > div:not(.totalbar):not(.toast) { padding: 18px max(16px, env(safe-area-inset-right, 0px)) 20px max(16px, env(safe-area-inset-left, 0px)); }
+  #jobview, #jobsview, #settingsview { display: flex; flex-direction: column; gap: 22px; min-width: 0; flex: 1 0 auto; }
+  #panel [hidden] { display: none !important; }
   [hidden] { display: none !important; }
-  .restoreset { display: flex; gap: 10px; align-items: center; justify-content: space-between; font-size: 13px; font-variant-numeric: tabular-nums; }
+
+  h1 { font: 650 22px/1.2 var(--display); margin: 0; letter-spacing: -.01em; }
+  h2 { font: 700 15px/1.3 var(--body); color: var(--muted); margin: 0 0 10px; }
+  p { margin: 0; }
+  .muted { color: var(--muted); font-size: 14px; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; min-height: 44px; border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: 8px 14px; }
+  button.primary { background: var(--moss); color: var(--moss-ink); border-color: var(--moss); font-weight: 700; }
+  button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid var(--moss); outline-offset: 2px; }
+  input, select { border: 1.5px solid var(--edge); background: var(--card); border-radius: 10px; padding: 9px 11px; min-width: 0; min-height: 44px; font-size: 16px; }
+  .row { display: flex; gap: 10px; align-items: center; }
+  .row > .grow, .grow { flex: 1; min-width: 0; }
+  a.link { color: var(--moss); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+  /* Map controls */
+  .toolbar { position: absolute; z-index: 1000; top: calc(10px + env(safe-area-inset-top, 0px)); left: 64px; right: max(10px, env(safe-area-inset-right, 0px));
+             display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .toolbar > * { pointer-events: auto; }
+  .searchbox { display: flex; max-width: 420px; background: var(--card); border-radius: 999px; box-shadow: var(--shadow); }
+  .searchbox input { flex: 1; border: 0; background: none; border-radius: 999px 0 0 999px; padding-left: 16px; }
+  .searchbox button { border: 0; background: none; border-radius: 0 999px 999px 0; color: var(--moss); font-weight: 700; }
+  .toolrow { display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
+  .toolrow > * { pointer-events: auto; }
+  .chip { border-radius: 999px; border: 0; box-shadow: var(--shadow); padding: 8px 16px; background: var(--card); }
+  .chip.primary { background: var(--moss); color: var(--moss-ink); }
+  .leaflet-touch .leaflet-bar, .leaflet-bar { border: 0 !important; border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+  .leaflet-bar a, .leaflet-touch .leaflet-bar a { width: 44px !important; height: 44px !important; line-height: 44px !important; background: var(--card); color: var(--ink); border-color: var(--line); }
+  .leaflet-control-layers { border: 0 !important; border-radius: 14px !important; box-shadow: var(--shadow) !important; background: var(--card) !important; color: var(--ink); }
+  .leaflet-control-layers-toggle { width: 44px !important; height: 44px !important; border-radius: 14px; }
+  .leaflet-control-layers-expanded { padding: 10px 14px; font-size: 15px; }
+  .leaflet-control-layers label { min-height: 34px; display: flex; align-items: center; }
+  .leaflet-control-scale-line { background: rgb(248 249 243 / .8); border-color: #555; }
+  .leaflet-control-attribution { font-size: 10px; max-width: calc(100vw - 80px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                                 background: rgb(248 249 243 / .75) !important; border-radius: 8px 0 0 0; cursor: pointer; }
+  .leaflet-control-attribution.open { white-space: normal; }
+  .lbl { background: rgb(20 26 18 / .74); color: #fff; border: 0; border-radius: 8px; box-shadow: none; padding: 3px 8px;
+         font: 700 12px/1.3 var(--body); text-align: center; }
+  .lbl small { font-weight: 400; font-size: 11px; opacity: .9; }
+  .lbl::before { display: none; }
+  .marker-icon { width: 22px !important; height: 22px !important; margin: -11px 0 0 -11px !important; border: 3px solid #3F5C2F !important; background: #fff !important; }
+  .marker-icon-middle { width: 14px !important; height: 14px !important; margin: -7px 0 0 -7px !important; border-width: 2px !important; opacity: .85; }
+  .home-pin { font-size: 20px; line-height: 26px; text-align: center; background: #F8F9F3; color: #3F5C2F; border: 2px solid #3F5C2F; border-radius: 50%; box-shadow: var(--shadow); }
+
+  /* Drawing bar and messages over the map */
+  .drawbar { position: absolute; z-index: 1000; left: 50%; transform: translateX(-50%); bottom: calc(var(--sheet-overlap) + 14px);
+             width: min(440px, calc(100% - 24px)); background: var(--card); border-radius: 18px; box-shadow: var(--shadow); padding: 12px; display: grid; gap: 10px; }
+  .drawbar { padding: 10px; gap: 8px; }
+  .drawbar p { text-align: center; font-weight: 700; font-size: 15px; }
+  .drawbtns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .drawbtns button { box-shadow: none; border: 1px solid var(--line); }
+  .drawbtns button:disabled { opacity: .45; cursor: default; }
+  #hint { position: absolute; z-index: 1000; bottom: calc(var(--sheet-overlap) + 18px); left: 50%; transform: translateX(-50%); background: rgb(20 26 18 / .85); color: #fff;
+          padding: 10px 16px; border-radius: 999px; font-size: 14px; max-width: 90%; text-align: center; }
+
+  /* Job panel */
+  .jobhead { display: flex; gap: 8px; align-items: center; }
+  .jobtitle { flex: 1; min-width: 0; font: 650 22px/1.2 var(--display); border: 0; border-bottom: 2px dashed transparent; border-radius: 0; background: none; padding: 6px 0; letter-spacing: -.01em; }
+  .jobtitle:hover, .jobtitle:focus { border-bottom-color: var(--edge); outline: none; }
+  .jobtitle::placeholder { color: var(--muted); }
+  .headbtns { display: flex; gap: 6px; flex: none; }
+  .headbtns button { border-radius: 999px; padding: 8px 14px; }
+  #opensettings { width: 44px; padding: 0; font-size: 19px; }
+  #patches { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .patch { background: var(--card); border-radius: 14px; padding: 10px 8px 12px 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px;
+           cursor: pointer; box-shadow: inset 6px 0 0 var(--c); }
+  .patch.sel { box-shadow: inset 6px 0 0 var(--c), 0 0 0 2px var(--moss); }
+  .patch .pname { flex: 1; min-width: 0; font-weight: 700; border: 0; border-bottom: 2px dashed transparent; border-radius: 0; background: none; padding: 6px 0; }
+  .patch .pname:hover, .patch .pname:focus { border-bottom-color: var(--edge); outline: none; }
+  .patch select { flex: none; border-radius: 999px; border-color: transparent; background: color-mix(in srgb, var(--c) 26%, var(--card)); font-weight: 700; padding-right: 8px; }
+  .patch .nums { display: flex; justify-content: space-between; align-items: baseline; padding-right: 10px; font-variant-numeric: tabular-nums; }
+  .patch .price { font-weight: 700; font-size: 17px; }
+  .iconbtn { width: 44px; padding: 0; border: 0; background: none; color: var(--muted); font-size: 20px; flex: none; }
+  .iconbtn:hover { color: var(--danger); }
+  .empty { background: var(--card); border-radius: 14px; padding: 16px; color: var(--muted); }
+  .totals { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-variant-numeric: tabular-nums; }
+  .totals .r { text-align: right; }
+  .travelnote { margin-top: 8px; }
+  .field { display: grid; grid-template-columns: 1fr 130px; gap: 10px; align-items: center; margin-top: 10px; }
+  .money { display: flex; align-items: center; border: 1.5px solid var(--edge); border-radius: 10px; background: var(--card); min-height: 44px; padding-left: 11px; }
+  .money:focus-within { outline: 3px solid var(--moss); outline-offset: 2px; }
+  .money > span { color: var(--muted); }
+  .money input { border: 0; background: none; text-align: right; width: 100%; outline: none; min-height: 40px; padding-left: 4px; }
+  #quote { width: 100%; height: 150px; font: 13px/1.4 ui-monospace, monospace; border-radius: 10px; border: 1.5px solid var(--edge); background: var(--card); padding: 10px; margin-top: 10px; }
+
+  /* Total pinned to the bottom of the panel */
+  .totalbar { position: sticky; bottom: 0; margin-top: auto; z-index: 2; display: flex; align-items: center; gap: 14px;
+              background: var(--paper); border-top: 1px solid var(--line);
+              padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+  .totalbar .tbox { flex: 1; min-width: 0; display: grid; }
+  .totalbar .tlabel { font-size: 14px; color: var(--muted); }
+  .totalbar .tbig { font: 700 30px/1.05 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+  .totalbar .tsub { font-size: 13px; color: var(--muted); }
+  .totalbar button { border-radius: 999px; padding: 10px 22px; min-height: 50px; }
+  .toast { position: sticky; bottom: 90px; margin: 0 16px; z-index: 3; display: flex; align-items: center; gap: 12px; background: #263022; color: #F3F6EC;
+           border-radius: 14px; padding: 6px 6px 6px 16px; box-shadow: var(--shadow); }
+  .toast span { flex: 1; min-width: 0; }
+  .toast button { background: none; border: 0; color: #CFE3B5; font-weight: 700; }
+
+  /* Jobs list */
+  #joblist { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .jobcard { display: flex; align-items: center; background: var(--card); border-radius: 14px; min-width: 0; }
+  .jobcard.current { box-shadow: 0 0 0 2px var(--moss); }
+  .jobcard .open { flex: 1; min-width: 0; border: 0; background: none; text-align: left; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 12px 6px 12px 16px; }
+  .jobcard .jname { font-weight: 700; overflow-wrap: anywhere; }
+  .jobcard .muted { grid-column: 1; }
+  .jobcard .jtotal { grid-column: 2; grid-row: 1 / span 2; align-self: center; font: 700 18px var(--display); font-variant-numeric: tabular-nums; }
+  .jobcard .del { min-width: 64px; }
+  .pill { font-size: 12px; font-weight: 700; color: var(--moss); background: var(--moss-soft); border-radius: 999px; padding: 2px 8px; margin-left: 6px; white-space: nowrap; }
+
+  /* Settings */
+  .group { background: var(--card); border-radius: 14px; padding: 6px 14px; display: grid; }
+  .group .field { margin: 0; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .group .field:last-child { border-bottom: 0; }
+  .group .field label { display: flex; align-items: center; gap: 10px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--c); flex: none; }
+  .note { margin-top: 8px; }
+  .switch { display: flex; align-items: center; gap: 12px; cursor: pointer; min-height: 44px; }
+  .switch input { width: 22px; height: 22px; min-height: 0; accent-color: var(--moss); margin: 0; }
+  .homelabel { font-weight: 700; margin-bottom: 10px; }
+  .restore { margin-top: 12px; background: var(--card); border-radius: 14px; padding: 12px 14px; display: grid; gap: 8px; }
+  .restoreset { display: flex; gap: 10px; align-items: center; justify-content: space-between; font-size: 14px; font-variant-numeric: tabular-nums; }
   .restoreset > span { min-width: 0; }
   .restoreset button { flex: none; }
-  .totals .big { font-size: 22px; font-weight: 700; border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
-  .lbl { background: rgba(0,0,0,.7); color: #fff; border: 0; box-shadow: none; font-weight: 600; font-size: 12px; text-align: center; }
-  .lbl::before { display: none; }
-  #quote { width: 100%; height: 140px; font: 12px ui-monospace, monospace; }
+  @media (prefers-reduced-motion: no-preference) { button, .patch, .jobcard { transition: background-color .15s, box-shadow .15s; } }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700&family=Bricolage+Grotesque:opsz,wght@12..96,500..700&display=swap">
 </head>
 <body>
 <div id="mapwrap">
   <div id="map"></div>
   <div class="toolbar">
-    <form id="search"><input id="q" placeholder="Search address or postcode" aria-label="Search address"><button>Go</button></form>
-    <button id="locate" title="Go to my location">◎ Me</button>
-    <button id="draw" class="primary">＋ Draw patch</button>
+    <form id="search" class="searchbox"><input id="q" type="search" placeholder="Find an address or postcode" aria-label="Find an address or postcode"><button aria-label="Search">Go</button></form>
+    <div class="toolrow" id="toolrow">
+      <button id="locate" class="chip" aria-label="Go to my location">◎ My location</button>
+      <button id="draw" class="chip primary">＋ Draw patch</button>
+    </div>
+  </div>
+  <div id="drawbar" class="drawbar" hidden>
+    <p id="drawmsg">Tap each corner of the patch.</p>
+    <div class="drawbtns">
+      <button id="undocorner" aria-label="Undo last corner">Undo</button>
+      <button id="finishdraw" class="primary">Finish</button>
+      <button id="canceldraw">Cancel</button>
+    </div>
   </div>
   <div id="hint" hidden></div>
 </div>
@@ -780,18 +886,22 @@ svg.leaflet-image-layer.leaflet-interactive path {
   <div id="settingsview" hidden>
     <div class="row">
       <h1 class="grow">Settings</h1>
-      <button id="closesettings" aria-label="Back to current job">Done</button>
+      <button id="closesettings" class="primary" aria-label="Back to current job">Done</button>
     </div>
     <section>
-      <h2>Rates by difficulty (£ per m²)</h2>
-      <div class="rates" id="rates"></div>
-      <div class="rates" style="margin-top:10px">
-        <span></span><label for="minimum">Minimum charge (£)</label><input id="minimum" type="number" min="0" step="1">
+      <h2>Rates by difficulty, per m²</h2>
+      <div class="group" id="rates"></div>
+      <div class="group" style="margin-top:10px">
+        <div class="field"><label for="minimum">Minimum charge</label><span class="money"><span>£</span><input id="minimum" type="number" min="0" step="1" inputmode="decimal"></span></div>
       </div>
-      <p class="muted">These apply to every job. They only change when you edit them here.</p>
+      <p class="muted note">These apply to every job. They only change when you edit them here.</p>
+      <div id="restore" class="restore" hidden>
+        <div class="row"><strong class="grow">Earlier rates found on this device</strong><button id="restorehide" class="iconbtn" style="width:auto;padding:0 8px" aria-label="Hide earlier rates">Hide</button></div>
+        <div id="restorelist"></div>
+      </div>
     </section>
     <section>
-      <h2>Home / base</h2>
+      <h2>Home or base</h2>
       <p id="homelabel" class="homelabel"></p>
       <form id="homesearch" class="row">
         <input id="homeq" class="grow" placeholder="Home address or postcode" aria-label="Home address or postcode">
@@ -801,31 +911,28 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </section>
     <section>
       <h2>Travel</h2>
-      <div class="rates">
-        <span></span><label for="permile">Travel rate (£ per mile)</label><input id="permile" type="number" min="0" step="0.01">
-        <span></span><label for="freemiles">Free within (miles)</label><input id="freemiles" type="number" min="0" step="1">
+      <div class="group">
+        <div class="field"><label for="permile">Rate per mile</label><span class="money"><span>£</span><input id="permile" type="number" min="0" step="0.01" inputmode="decimal"></span></div>
+        <div class="field"><label for="freemiles">Free within (miles)</label><span class="money"><span></span><input id="freemiles" type="number" min="0" step="1" inputmode="decimal"></span></div>
       </div>
-      <label class="switch" for="returntrip" style="margin-top:10px"><input id="returntrip" type="checkbox"> Count return journey</label>
-      <p class="muted">Driving distance from home to the middle of the job. Miles beyond the free distance are charged, each way when the return journey is counted.</p>
+      <label class="switch" for="returntrip" style="margin-top:8px"><input id="returntrip" type="checkbox"> Count the return journey</label>
+      <p class="muted note">Driving distance from home to the middle of the job. Miles beyond the free distance are charged, each way when the return journey is counted.</p>
     </section>
     <section>
       <h2>Quote</h2>
-      <label class="switch" for="round10"><input id="round10" type="checkbox"> Round quote total to nearest £10</label>
-      <p class="muted">Only the final total is rounded. Patch prices and travel stay exact.</p>
-      <div id="restore" class="restore" hidden>
-        <div class="row"><strong class="grow">Earlier rates found on this device</strong><button id="restorehide" class="ghost" aria-label="Hide earlier rates">Hide</button></div>
-        <div id="restorelist"></div>
-      </div>
+      <label class="switch" for="round10"><input id="round10" type="checkbox"> Round the total to the nearest £10</label>
+      <p class="muted note">Only the final total is rounded. Patch prices and travel stay exact.</p>
     </section>
   </div>
 
   <div id="jobview">
-    <div class="row">
-      <h1 class="grow">Scything Pricer</h1>
-      <button id="openjobs">Jobs<span id="jobcount"></span></button>
-      <button id="opensettings" aria-label="Settings">⚙ Settings</button>
-    </div>
-    <input id="jobname" placeholder="Job name / client" aria-label="Job name">
+    <header class="jobhead">
+      <input id="jobname" class="jobtitle" placeholder="Name this job" aria-label="Job name">
+      <div class="headbtns">
+        <button id="openjobs">Jobs<span id="jobcount"></span></button>
+        <button id="opensettings" aria-label="Settings" title="Settings">⚙</button>
+      </div>
+    </header>
 
     <section>
       <h2>Patches</h2>
@@ -834,17 +941,20 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
     <section>
       <h2>Quote</h2>
-      <div class="rates" style="margin-bottom:10px">
-        <span></span><label for="callout">Travel for this job (£)</label><input id="callout" type="number" min="0" step="0.01">
-      </div>
-      <p class="muted travelnote" id="travelnote"></p>
       <div class="totals" id="totals"></div>
-      <div class="row" style="margin-top:10px">
-        <button id="copy" class="primary grow">Copy quote</button>
+      <p class="muted travelnote" id="travelnote"></p>
+      <div id="traveledit" class="field" hidden>
+        <label for="callout">Travel for this job</label>
+        <span class="money"><span>£</span><input id="callout" type="number" min="0" step="0.01" inputmode="decimal"></span>
       </div>
-      <textarea id="quote" hidden readonly></textarea>
+      <textarea id="quote" hidden readonly aria-label="Quote text"></textarea>
     </section>
+  </div>
 
+  <div id="toast" class="toast" hidden role="status"><span id="toastmsg"></span><button id="toastundo">Undo</button></div>
+  <div id="totalbar" class="totalbar">
+    <div class="tbox"><span class="tlabel">Total</span><span id="totalbig" class="tbig">£0</span><span id="totalsub" class="tsub"></span></div>
+    <button id="copy" class="primary">Copy quote</button>
   </div>
 </aside>
 
@@ -859,10 +969,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
 </script>
 <script>
 const DIFFS = [
-  { key: 'easy',   name: 'Easy',      color: '#4caf50', rate: 0.20 },
-  { key: 'medium', name: 'Medium',    color: '#e6b800', rate: 0.35 },
-  { key: 'hard',   name: 'Hard',      color: '#f08a24', rate: 0.55 },
-  { key: 'vhard',  name: 'Very hard', color: '#e0433a', rate: 0.80 },
+  { key: 'easy',   name: 'Easy',      color: '#7FB069', rate: 0.20 },
+  { key: 'medium', name: 'Medium',    color: '#E2B93B', rate: 0.35 },
+  { key: 'hard',   name: 'Hard',      color: '#D9783A', rate: 0.55 },
+  { key: 'vhard',  name: 'Very hard', color: '#B5403A', rate: 0.80 },
 ];
 const D = Object.fromEntries(DIFFS.map(d => [d.key, d]));
 const KEY = 'scythe-pricer-v2', OLD_KEY = 'scythe-pricer-v1';
@@ -1004,6 +1114,8 @@ L.control.layers({ Satellite: sat, Street: osm }, { 'Roads & place names': label
 map.on('baselayerchange', e => { store.base = e.layer === osm ? 'osm' : 'sat'; save(false); });
 map.on('overlayadd overlayremove', e => { if (e.layer === labels) { store.labels = e.type === 'overlayadd'; save(false); } });
 L.control.scale({ imperial: false }).addTo(map);
+map.attributionControl.setPrefix(false);
+map.attributionControl.getContainer().addEventListener('click', e => e.currentTarget.classList.toggle('open'));
 if (store.view) map.setView(store.view.c, store.view.z); else map.setView([54.2, -2.5], 6);
 map.on('moveend', () => { const c = map.getCenter(); store.view = { c: [c.lat, c.lng], z: map.getZoom() }; save(false); });
 
@@ -1025,7 +1137,8 @@ function styleFor(p) {
 function addLayer(p) {
   const layer = L.polygon(p.latlngs, styleFor(p)).addTo(map);
   layer.bindTooltip('', { permanent: true, direction: 'center', className: 'lbl' });
-  layer.on('click', e => { L.DomEvent.stopPropagation(e); if (!drawing) select(p.id); });
+  // while drawing, let taps on an existing patch through so a corner can go on a neighbouring patch's edge
+  layer.on('click', e => { if (drawing) return; L.DomEvent.stopPropagation(e); select(p.id); });
   const sync = () => {
     p.latlngs = layer.getLatLngs()[0].map(l => [l.lat, l.lng]);
     save(); render();
@@ -1051,10 +1164,30 @@ function flash(t) { setHint(t); setTimeout(() => { if (!drawing) setHint(''); },
 $('draw').onclick = () => {
   if (drawing) { map.pm.disableDraw(); return; }
   select(null);
-  map.pm.enableDraw('Polygon', { snappable: true, snapDistance: SNAP, allowSelfIntersection: false });
+  map.pm.enableDraw('Polygon', { snappable: true, snapDistance: SNAP, allowSelfIntersection: false, tooltips: false });
 };
-map.on('pm:drawstart', () => { drawing = true; $('draw').textContent = '✕ Cancel'; setHint('Tap each corner of the patch. Tap the first corner again to finish.'); });
-map.on('pm:drawend', () => { drawing = false; $('draw').textContent = '＋ Draw patch'; setHint(''); });
+// Drawing bar: a count of corners plus Undo corner / Finish / Cancel, so nobody has to hit the first corner exactly with a thumb
+const drawTool = () => map.pm.Draw.Polygon;
+const cornerCount = () => { const l = drawTool()._layer; return l ? l.getLatLngs().length : 0; };
+function updateDrawbar() {
+  const n = cornerCount();
+  $('drawmsg').textContent = n === 0 ? 'Tap each corner of the patch.' : n < 3 ? `${n} corner${n === 1 ? '' : 's'}. Keep tapping round the edge.` : `${n} corners. Tap Finish when you're round.`;
+  $('undocorner').disabled = n === 0;
+  $('finishdraw').disabled = n < 3;
+}
+map.on('pm:drawstart', e => {
+  drawing = true; setHint(''); $('drawbar').hidden = false; $('toolrow').hidden = true;
+  document.body.classList.add('drawing'); map.invalidateSize({ pan: false });
+  e.workingLayer.on('pm:vertexadded', () => setTimeout(updateDrawbar, 0));
+  updateDrawbar();
+});
+map.on('pm:drawend', () => {
+  drawing = false; $('drawbar').hidden = true; $('toolrow').hidden = false;
+  document.body.classList.remove('drawing'); map.invalidateSize({ pan: false });
+});
+$('undocorner').onclick = () => { if (cornerCount()) drawTool()._removeLastVertex(); updateDrawbar(); };
+$('finishdraw').onclick = () => { if (cornerCount() >= 3) drawTool()._finishShape(); };
+$('canceldraw').onclick = () => map.pm.disableDraw();
 map.on('pm:create', e => {
   const latlngs = e.layer.getLatLngs()[0].map(l => [l.lat, l.lng]);
   e.layer.remove();
@@ -1068,42 +1201,50 @@ function render() {
   const panel = $('panel'), keepScroll = panel.scrollTop, keepPage = window.scrollY;
   panel.style.minHeight = panel.offsetHeight + 'px';   // stop the list rebuild collapsing the panel
   $('patches').innerHTML = job.patches.length ? '' :
-    '<p class="muted">No patches yet. Find the site on the map, press <b>＋ Draw patch</b> and tap round the edge of the area.</p>';
+    '<p class="empty">No patches yet. Find the site on the map, tap <b>＋ Draw patch</b>, then tap round the edge of the area.</p>';
   for (const p of job.patches) {
     const a = ringArea(p.latlngs), price = a * (store.rates[p.diff] || 0);
     const layer = layers[p.id];
     layer.setStyle(styleFor(p));
-    layer.setTooltipContent(esc(p.name) + '<br>' + fmtArea(a));
+    layer.setTooltipContent(esc(p.name) + '<br><small>' + fmtArea(a) + ', ' + D[p.diff].name.toLowerCase() + '</small>');
     const el = document.createElement('div');
     el.className = 'patch' + (p.id === selected ? ' sel' : '');
     el.style.setProperty('--c', D[p.diff].color);
     el.innerHTML = `
       <div class="row">
-        <input class="grow" value="${esc(p.name)}" aria-label="Patch name">
+        <input class="pname" value="${esc(p.name)}" aria-label="Patch name">
         <select aria-label="Difficulty">${DIFFS.map(d => `<option value="${d.key}"${d.key === p.diff ? ' selected' : ''}>${d.name}</option>`).join('')}</select>
-        <button class="ghost" title="Delete patch" aria-label="Delete patch">✕</button>
+        <button class="iconbtn" title="Delete patch" aria-label="Delete ${esc(p.name)}">✕</button>
       </div>
-      <div class="nums"><span>${fmtArea(a)} <span class="muted">(${acres(a)})</span></span><span class="price">${money(price)}</span></div>
-      ${p.id === selected ? '<div class="muted">Drag the corners on the map to reshape. Drag a midpoint to add a corner; right-click / long-press a corner to remove it.</div>' : ''}`;
+      <div class="nums"><span>${fmtArea(a)} <span class="muted">${acres(a)}</span></span><span class="price">${money(price)}</span></div>
+      ${p.id === selected ? '<div class="muted">Drag the corners on the map to reshape. Drag a small midpoint to add a corner. Long-press a corner to remove it.</div>' : ''}`;
     el.onclick = ev => { if (!ev.target.closest('input,select,button') && selected !== p.id) { select(p.id); map.fitBounds(layer.getBounds(), { maxZoom: 20, padding: [40, 40] }); } };
     el.querySelector('input').onchange = ev => { p.name = ev.target.value || 'Patch'; save(); render(); };
     el.querySelector('select').onchange = ev => { p.diff = ev.target.value; save(); render(); };
     el.querySelector('button').onclick = () => {
+      const at = job.patches.indexOf(p), owner = job;
       layers[p.id].remove(); delete layers[p.id];
       job.patches = job.patches.filter(x => x !== p);
       if (selected === p.id) selected = null;
       save(); render();
+      toast(`Deleted ${p.name}`, () => {
+        if (job !== owner) return;
+        job.patches.splice(Math.min(at, job.patches.length), 0, p); addLayer(p); save(); render();
+      });
     };
     $('patches').appendChild(el);
   }
   const t = jobTotals(job);
+  const minApplied = t.exact > t.sub + t.callout;
   $('totals').innerHTML = `
-    <span>Total area</span><span>${fmtArea(t.area)} <span class="muted">(${acres(t.area)})</span></span>
-    <span>Scything</span><span>${money(t.sub)}</span>
-    <span>Travel</span><span>${money(t.callout)}</span>
-    <span class="muted" style="visibility:${t.exact > t.sub + t.callout ? 'visible' : 'hidden'}">Minimum charge applied</span><span></span>
-    <span class="big">Total</span><span class="big">${money(t.total)}</span>
-    <span></span><span class="muted" style="visibility:${t.total !== t.exact ? 'visible' : 'hidden'}">Rounded from ${money(t.exact)}</span>`;
+    <span>Total area</span><span class="r">${fmtArea(t.area)} <span class="muted">${acres(t.area)}</span></span>
+    <span>Scything</span><span class="r">${money(t.sub)}</span>
+    <span>Travel ${job.patches.length ? `<a class="link" id="edittravel" role="button" tabindex="0">${$('traveledit').hidden ? 'Edit' : 'Hide'}</a>` : ''}</span><span class="r">${money(t.callout)}</span>
+    ${minApplied ? `<span>Minimum charge applied</span><span class="r">${money(t.exact)}</span>` : ''}`;
+  const et = $('edittravel');
+  if (et) et.onclick = et.onkeydown = ev => { if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') return; ev.preventDefault(); $('traveledit').hidden = !$('traveledit').hidden; render(); if (!$('traveledit').hidden) $('callout').focus(); };
+  $('totalbig').textContent = money(t.total).replace(/\.00$/, '');
+  $('totalsub').textContent = t.total !== t.exact ? 'Rounded from ' + money(t.exact) : minApplied ? 'Minimum charge' : '';
   renderTravel();
   const n = store.jobs.filter(j => !isEmpty(j) || j === job).length;
   $('jobcount').textContent = n > 1 ? ` (${n})` : '';
@@ -1116,15 +1257,16 @@ function render() {
 // Rates and minimum charge are shared by all jobs. A blank or half-typed box is ignored, so a rate is never wiped to zero by accident.
 const readNum = v => (v === '' || !isFinite(+v)) ? null : +v;
 $('rates').innerHTML = DIFFS.map(d =>
-  `<span class="dot" style="--c:${d.color}"></span><label for="r-${d.key}">${d.name}</label><input id="r-${d.key}" type="number" min="0" step="0.01">`).join('');
+  `<div class="field"><label for="r-${d.key}"><span class="dot" style="--c:${d.color}"></span>${d.name}</label><span class="money"><span>£</span><input id="r-${d.key}" type="number" min="0" step="0.01" inputmode="decimal"></span></div>`).join('');
+const fix2 = v => (+v).toFixed(2);
 for (const d of DIFFS) $('r-' + d.key).oninput = e => {
   const v = readNum(e.target.value); if (v === null) return;
   store.rates[d.key] = v; save(false); render(); renderRestore();
 };
-for (const d of DIFFS) $('r-' + d.key).onblur = e => { e.target.value = store.rates[d.key]; };
+for (const d of DIFFS) $('r-' + d.key).onblur = e => { e.target.value = fix2(store.rates[d.key]); };
 for (const [id, k] of [['permile', 'perMile'], ['freemiles', 'freeMiles']]) {
   $(id).oninput = e => { const v = readNum(e.target.value); if (v === null) return; store.travel[k] = v; save(false); render(); };
-  $(id).onblur = e => { e.target.value = store.travel[k]; };
+  $(id).onblur = e => { e.target.value = k === 'perMile' ? fix2(store.travel[k]) : store.travel[k]; };
 }
 $('returntrip').onchange = e => { store.travel.returnTrip = e.target.checked; save(false); render(); };
 function homeLabel() {
@@ -1160,22 +1302,23 @@ function renderTravel() {
     s = tr.charged > 0
       ? `${dist}. ${t.freeMiles ? 'First ' + t.freeMiles + ' free, so ' : ''}${miles(tr.charged)} charged${t.returnTrip ? ' (there and back)' : ''} @ £${(+t.perMile).toFixed(2)}/mile = ${money(tr.estimate)}.`
       : `${dist}. Within the free ${t.freeMiles} miles.`;
-    if (tr.override) s += ` You've entered ${money(+job.travelOverride)}. <a id="useestimate">Use estimate</a>`;
+    if (tr.override) s += ` You've entered ${money(+job.travelOverride)}. <a class="link" id="useestimate" role="button" tabindex="0">Use the estimate</a>`;
   }
   note.innerHTML = s; note.hidden = !s;
-  const u = $('useestimate'); if (u) u.onclick = () => { job.travelOverride = null; save(); render(); };
+  const u = $('useestimate'); if (u) u.onclick = u.onkeydown = ev => { if (ev.type === 'keydown' && ev.key !== 'Enter') return; job.travelOverride = null; $('traveledit').hidden = true; save(); render(); };
   if (tr.pending) fetchRoute(job);
 }
 $('jobname').oninput = e => { job.name = e.target.value; save(); };
 
 function fillInputs() {
   $('jobname').value = job.name;
-  for (const d of DIFFS) $('r-' + d.key).value = store.rates[d.key];
+  for (const d of DIFFS) $('r-' + d.key).value = fix2(store.rates[d.key]);
   $('round10').checked = store.round10;
   $('minimum').value = store.minimum || '';
-  $('permile').value = store.travel.perMile; $('freemiles').value = store.travel.freeMiles; $('returntrip').checked = store.travel.returnTrip;
+  $('permile').value = fix2(store.travel.perMile); $('freemiles').value = store.travel.freeMiles; $('returntrip').checked = store.travel.returnTrip;
   homeLabel();
   $('quote').hidden = true;
+  $('traveledit').hidden = job.travelOverride == null;
 }
 function loadJob(j, fit = true) {
   if (drawing) map.pm.disableDraw();
@@ -1204,7 +1347,7 @@ function renderRestore() {
   $('restore').hidden = !sets.length;
   $('restorelist').innerHTML = sets.map((s, i) => `
     <div class="restoreset">
-      <span>${DIFFS.map(d => `${d.name} £${(+s.r[d.key]).toFixed(2)}`).join(' · ')}<br><span class="muted">from ${esc(s.from)}</span></span>
+      <span>${DIFFS.map(d => `${d.name} £${(+s.r[d.key]).toFixed(2)}`).join(', ')}<br><span class="muted">from ${esc(s.from)}</span></span>
       <button data-i="${i}">Use these</button>
     </div>`).join('');
   $('restorelist').querySelectorAll('button').forEach(b => b.onclick = () => {
@@ -1216,6 +1359,7 @@ $('restorehide').onclick = () => { store.restoreDismissed = true; save(false); r
 // ---------- Saved jobs ----------
 function showView(name) {
   for (const v of ['jobview', 'jobsview', 'settingsview']) $(v).hidden = v !== name;
+  $('totalbar').hidden = name !== 'jobview';
   $('panel').scrollTop = 0;
   if (name === 'jobsview') renderJobs();
   if (name === 'settingsview') renderRestore();
@@ -1234,10 +1378,10 @@ function renderJobs() {
     el.innerHTML = `
       <button class="open" aria-label="Open ${esc(j.name || 'Untitled job')}">
         <span class="jname">${esc(j.name || 'Untitled job')}${j === job ? ' <span class="pill">Open</span>' : ''}</span>
-        <span class="muted">${fmtDate(j.updated)} · ${j.patches.length} patch${j.patches.length === 1 ? '' : 'es'} · ${fmtArea(t.area)}</span>
-        <span class="jtotal">${money(t.total)}</span>
+        <span class="muted">${fmtDate(j.updated)}, ${j.patches.length} patch${j.patches.length === 1 ? '' : 'es'}, ${fmtArea(t.area)}</span>
+        <span class="jtotal">${money(t.total).replace(/\.00$/, '')}</span>
       </button>
-      <button class="ghost del">${armedDelete === j.id ? 'Delete?' : '✕'}</button>`;
+      <button class="iconbtn del" aria-label="Delete ${esc(j.name || 'Untitled job')}">${armedDelete === j.id ? 'Delete?' : '✕'}</button>`;
     el.querySelector('.open').onclick = () => { if (j !== job) loadJob(j); showJobs(false); };
     el.querySelector('.del').onclick = () => {
       if (armedDelete !== j.id) { armedDelete = j.id; renderJobs(); setTimeout(() => { if (armedDelete === j.id) { armedDelete = null; renderJobs(); } }, 3000); return; }
@@ -1271,10 +1415,18 @@ $('copy').onclick = async () => {
   lines.push('TOTAL: ' + money(t.total));
   const text = lines.join('\n');
   $('quote').value = text; $('quote').hidden = false;
-  try { await navigator.clipboard.writeText(text); $('copy').textContent = 'Copied ✓'; }
-  catch (e) { $('quote').select(); $('copy').textContent = 'Select and copy below'; }
+  try { await navigator.clipboard.writeText(text); $('copy').textContent = 'Copied ✓'; $('quote').hidden = true; }
+  catch (e) { $('quote').select(); $('copy').textContent = 'Copy from the box'; }
   setTimeout(() => $('copy').textContent = 'Copy quote', 2000);
 };
+
+// Short message with Undo at the bottom of the panel
+let toastTimer = null;
+function toast(msg, undo) {
+  $('toastmsg').textContent = msg; $('toast').hidden = false;
+  $('toastundo').onclick = () => { $('toast').hidden = true; clearTimeout(toastTimer); undo(); };
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('toast').hidden = true; }, 7000);
+}
 
 // Search + locate
 $('search').onsubmit = async e => {

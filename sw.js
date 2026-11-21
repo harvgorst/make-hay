@@ -1,5 +1,5 @@
 // Keeps the app itself available offline. Map tiles and address search always come from the network.
-const CACHE = 'scythe-pricer-v2';
+const CACHE = 'scythe-pricer-v3';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable.png', 'apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener('activate', e => {

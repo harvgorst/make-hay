@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
-<meta name="theme-color" content="#3F5C2F">
+<meta name="theme-color" content="#4A6B38">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Scything Pricer">
@@ -688,20 +688,22 @@ svg.leaflet-image-layer.leaflet-interactive path {
     --muted: #535D4E;
     --line: #D3D8C9;
     --edge: #7F8875;        /* outline of things you type into: 3:1 against cards */
-    --moss: #3F5C2F;        /* the one accent: hedgerow moss */
+    --moss: #4A6B38;        /* the one accent: hedgerow moss */
     --moss-ink: #F3F6EC;
     --moss-soft: #DCE5CF;
     --danger: #9E3A2D;
-    --shadow: 0 2px 12px rgb(24 34 18 / .16);
-    --display: "Bricolage Grotesque", "Figtree", system-ui, sans-serif;
-    --body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --shadow: 0 0 0 1px rgb(24 34 18 / .18), 0 2px 3px rgb(24 34 18 / .22);   /* hard, small: only for controls floating on the map */
+    --field: #E4E8DA;       /* fill for things you type into */
+    --display: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
     --sheet-overlap: 0px;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --ground: #121611; --paper: #1B2019; --card: #252B22; --ink: #E6EADF; --muted: #A5AE9B;
       --line: #353D31; --edge: #79836E; --moss: #A9C98C; --moss-ink: #16200F; --moss-soft: #2E3A26;
-      --danger: #EC9284; --shadow: 0 2px 14px rgb(0 0 0 / .45); color-scheme: dark;
+      --danger: #EC9284; --shadow: 0 0 0 1px rgb(0 0 0 / .5), 0 2px 3px rgb(0 0 0 / .5); --field: #2C3329; color-scheme: dark;
     }
   }
   * { box-sizing: border-box; }
@@ -715,7 +717,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   @media (max-width: 800px) {
     :root { --sheet-overlap: 20px; }
     body { grid-template-columns: 1fr; grid-template-rows: 50dvh 1fr; }
-    #panel { margin-top: calc(-1 * var(--sheet-overlap)); border-radius: 20px 20px 0 0; box-shadow: 0 -4px 18px rgb(24 34 18 / .18); }
+    #panel { margin-top: calc(-1 * var(--sheet-overlap)); border-radius: 0; box-shadow: 0 -1px 0 var(--line), 0 -2px 6px rgb(24 34 18 / .12); }
     .leaflet-bottom { bottom: var(--sheet-overlap); }
     body.drawing { grid-template-rows: 80dvh 1fr; }   /* more map to draw on while drawing */
   }
@@ -724,15 +726,17 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #panel [hidden] { display: none !important; }
   [hidden] { display: none !important; }
 
-  h1 { font: 650 22px/1.2 var(--display); margin: 0; letter-spacing: -.01em; }
-  h2 { font: 700 15px/1.3 var(--body); color: var(--muted); margin: 0 0 10px; }
+  h1 { font: 600 20px/1.25 var(--display); margin: 0; }
+  h2 { font: 600 14px/1.3 var(--body); color: var(--muted); margin: 0 0 10px; letter-spacing: .01em; }
   p { margin: 0; }
   .muted { color: var(--muted); font-size: 14px; }
   button, input, select, textarea { font: inherit; color: inherit; }
-  button { cursor: pointer; min-height: 44px; border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: 8px 14px; }
-  button.primary { background: var(--moss); color: var(--moss-ink); border-color: var(--moss); font-weight: 700; }
-  button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid var(--moss); outline-offset: 2px; }
-  input, select { border: 1.5px solid var(--edge); background: var(--card); border-radius: 10px; padding: 9px 11px; min-width: 0; min-height: 44px; font-size: 16px; }
+  button { cursor: pointer; min-height: 44px; border: 1px solid var(--edge); background: transparent; border-radius: 0; padding: 8px 16px; text-align: left; }
+  button.primary { background: var(--moss); color: var(--moss-ink); border-color: var(--moss); font-weight: 600; }
+  button:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+  button.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--moss) 88%, #000); }
+  button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid var(--moss); outline-offset: -2px; }
+  input, select { border: 0; border-bottom: 1px solid var(--edge); background: var(--field); border-radius: 0; padding: 9px 12px; min-width: 0; min-height: 44px; font-size: 16px; }
   .row { display: flex; gap: 10px; align-items: center; }
   .row > .grow, .grow { flex: 1; min-width: 0; }
   a.link { color: var(--moss); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -741,71 +745,74 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .toolbar { position: absolute; z-index: 1000; top: calc(10px + env(safe-area-inset-top, 0px)); left: 64px; right: max(10px, env(safe-area-inset-right, 0px));
              display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
   .toolbar > * { pointer-events: auto; }
-  .searchbox { display: flex; max-width: 420px; background: var(--card); border-radius: 999px; box-shadow: var(--shadow); }
-  .searchbox input { flex: 1; border: 0; background: none; border-radius: 999px 0 0 999px; padding-left: 16px; }
-  .searchbox button { border: 0; background: none; border-radius: 0 999px 999px 0; color: var(--moss); font-weight: 700; }
+  .searchbox { display: flex; max-width: 420px; background: var(--card); border-radius: 0; box-shadow: var(--shadow); }
+  .searchbox input { background: var(--card); border-bottom: 0; }
+  .searchbox input { flex: 1; border: 0; background: none; border-radius: 0; padding-left: 16px; }
+  .searchbox button { border: 0; border-left: 1px solid var(--line); background: none; border-radius: 0; color: var(--moss); font-weight: 600; text-align: center; }
   .toolrow { display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
   .toolrow > * { pointer-events: auto; }
-  .chip { border-radius: 999px; border: 0; box-shadow: var(--shadow); padding: 8px 16px; background: var(--card); }
+  .chip { border-radius: 0; border: 0; box-shadow: var(--shadow); padding: 8px 16px; background: var(--card); }
+  .chip.primary { font-weight: 600; }
   .chip.primary { background: var(--moss); color: var(--moss-ink); }
-  .leaflet-touch .leaflet-bar, .leaflet-bar { border: 0 !important; border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
-  .leaflet-bar a, .leaflet-touch .leaflet-bar a { width: 44px !important; height: 44px !important; line-height: 44px !important; background: var(--card); color: var(--ink); border-color: var(--line); }
-  .leaflet-control-layers { border: 0 !important; border-radius: 14px !important; box-shadow: var(--shadow) !important; background: var(--card) !important; color: var(--ink); }
-  .leaflet-control-layers-toggle { width: 44px !important; height: 44px !important; border-radius: 14px; }
+  .leaflet-touch .leaflet-bar, .leaflet-bar { border: 0 !important; border-radius: 0; box-shadow: var(--shadow); overflow: hidden; }
+  .leaflet-bar a, .leaflet-touch .leaflet-bar a { width: 44px !important; height: 44px !important; line-height: 44px !important; background: var(--card); color: var(--ink); border-color: var(--line); border-radius: 0 !important; font: 400 22px/44px var(--mono) !important; }
+  .leaflet-control-layers { border: 0 !important; border-radius: 0 !important; box-shadow: var(--shadow) !important; background: var(--card) !important; color: var(--ink); }
+  .leaflet-control-layers-toggle { width: 44px !important; height: 44px !important; border-radius: 0; }
   .leaflet-control-layers-expanded { padding: 10px 14px; font-size: 15px; }
   .leaflet-control-layers label { min-height: 34px; display: flex; align-items: center; }
   .leaflet-control-scale-line { background: rgb(248 249 243 / .8); border-color: #555; }
   .leaflet-control-attribution { font-size: 10px; max-width: calc(100vw - 80px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-                                 background: rgb(248 249 243 / .75) !important; border-radius: 8px 0 0 0; cursor: pointer; }
+                                 background: rgb(248 249 243 / .75) !important; border-radius: 0; cursor: pointer; }
   .leaflet-control-attribution.open { white-space: normal; }
-  .lbl { background: rgb(20 26 18 / .74); color: #fff; border: 0; border-radius: 8px; box-shadow: none; padding: 3px 8px;
-         font: 700 12px/1.3 var(--body); text-align: center; }
+  .lbl { background: rgb(20 26 18 / .78); color: #fff; border: 0; border-radius: 0; box-shadow: none; padding: 3px 8px;
+         font: 600 12px/1.3 var(--body); text-align: left; }
   .lbl small { font-weight: 400; font-size: 11px; opacity: .9; }
   .lbl::before { display: none; }
-  .marker-icon { width: 22px !important; height: 22px !important; margin: -11px 0 0 -11px !important; border: 3px solid #3F5C2F !important; background: #fff !important; }
-  .marker-icon-middle { width: 14px !important; height: 14px !important; margin: -7px 0 0 -7px !important; border-width: 2px !important; opacity: .85; }
-  .home-pin { font-size: 20px; line-height: 26px; text-align: center; background: #F8F9F3; color: #3F5C2F; border: 2px solid #3F5C2F; border-radius: 50%; box-shadow: var(--shadow); }
+  .marker-icon { width: 20px !important; height: 20px !important; margin: -10px 0 0 -10px !important; border: 3px solid #4A6B38 !important; background: #fff !important; border-radius: 0 !important; }
+  .marker-icon-middle { width: 12px !important; height: 12px !important; margin: -6px 0 0 -6px !important; border-width: 2px !important; opacity: .85; }
+  .home-pin { font-size: 20px; line-height: 26px; text-align: center; background: #F8F9F3; color: #4A6B38; border: 2px solid #4A6B38; border-radius: 0; box-shadow: var(--shadow); }
 
   /* Drawing bar and messages over the map */
   .drawbar { position: absolute; z-index: 1000; left: 50%; transform: translateX(-50%); bottom: calc(var(--sheet-overlap) + 14px);
-             width: min(440px, calc(100% - 24px)); background: var(--card); border-radius: 18px; box-shadow: var(--shadow); padding: 12px; display: grid; gap: 10px; }
+             width: min(440px, calc(100% - 24px)); background: var(--card); border-radius: 0; box-shadow: var(--shadow); padding: 12px; display: grid; gap: 10px; }
   .drawbar { padding: 10px; gap: 8px; }
   .drawbar p { text-align: center; font-weight: 700; font-size: 15px; }
   .drawbtns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .drawbtns button { box-shadow: none; border: 1px solid var(--line); }
+  .drawbtns button { box-shadow: none; text-align: center; }
   .drawbtns button:disabled { opacity: .45; cursor: default; }
   #hint { position: absolute; z-index: 1000; bottom: calc(var(--sheet-overlap) + 18px); left: 50%; transform: translateX(-50%); background: rgb(20 26 18 / .85); color: #fff;
-          padding: 10px 16px; border-radius: 999px; font-size: 14px; max-width: 90%; text-align: center; }
+          padding: 10px 16px; border-radius: 0; font-size: 14px; max-width: 90%; text-align: center; }
 
   /* Job panel */
   .jobhead { display: flex; gap: 8px; align-items: center; }
-  .jobtitle { flex: 1; min-width: 0; font: 650 22px/1.2 var(--display); border: 0; border-bottom: 2px dashed transparent; border-radius: 0; background: none; padding: 6px 0; letter-spacing: -.01em; }
+  .jobtitle { flex: 1; min-width: 0; font: 600 20px/1.25 var(--display); border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; padding: 6px 0; }
   .jobtitle:hover, .jobtitle:focus { border-bottom-color: var(--edge); outline: none; }
   .jobtitle::placeholder { color: var(--muted); }
   .headbtns { display: flex; gap: 6px; flex: none; }
-  .headbtns button { border-radius: 999px; padding: 8px 14px; }
-  #opensettings { width: 44px; padding: 0; font-size: 19px; }
-  #patches { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .patch { background: var(--card); border-radius: 14px; padding: 10px 8px 12px 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px;
+  .headbtns button { border-radius: 0; padding: 8px 14px; text-align: center; }
+  #opensettings { width: 44px; padding: 0; font-size: 19px; text-align: center; }
+  #patches { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .patch { background: var(--card); border-radius: 0; padding: 8px 8px 12px 18px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px;
            cursor: pointer; box-shadow: inset 6px 0 0 var(--c); }
-  .patch.sel { box-shadow: inset 6px 0 0 var(--c), 0 0 0 2px var(--moss); }
-  .patch .pname { flex: 1; min-width: 0; font-weight: 700; border: 0; border-bottom: 2px dashed transparent; border-radius: 0; background: none; padding: 6px 0; }
+  .patch.sel { box-shadow: inset 6px 0 0 var(--c), inset 0 0 0 2px var(--moss); }
+  .patch .pname { flex: 1; min-width: 0; font-weight: 600; border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; padding: 6px 0; }
   .patch .pname:hover, .patch .pname:focus { border-bottom-color: var(--edge); outline: none; }
-  .patch select { flex: none; border-radius: 999px; border-color: transparent; background: color-mix(in srgb, var(--c) 26%, var(--card)); font-weight: 700; padding-right: 8px; }
-  .patch .nums { display: flex; justify-content: space-between; align-items: baseline; padding-right: 10px; font-variant-numeric: tabular-nums; }
-  .patch .price { font-weight: 700; font-size: 17px; }
-  .iconbtn { width: 44px; padding: 0; border: 0; background: none; color: var(--muted); font-size: 20px; flex: none; }
+  .patch select { flex: none; border-radius: 0; background-color: var(--field); box-shadow: inset 4px 0 0 var(--c); padding-left: 14px; padding-right: 8px; font-weight: 500; }
+  .patch .nums { display: flex; justify-content: space-between; align-items: baseline; padding-right: 10px; font-family: var(--mono); font-size: 15px; }
+  .patch .price { font-weight: 600; font-size: 16px; }
+  .iconbtn { width: 44px; padding: 0; border: 0; background: none; color: var(--muted); font-size: 20px; flex: none; text-align: center; }
   .iconbtn:hover { color: var(--danger); }
-  .empty { background: var(--card); border-radius: 14px; padding: 16px; color: var(--muted); }
-  .totals { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-variant-numeric: tabular-nums; }
-  .totals .r { text-align: right; }
+  .empty { background: var(--card); border-radius: 0; padding: 16px; color: var(--muted); }
+  .totals { display: grid; grid-template-columns: 1fr auto; gap: 0; border-top: 1px solid var(--line); }
+  .totals > span { padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .totals .r { text-align: right; font-family: var(--mono); font-size: 15px; }
   .travelnote { margin-top: 8px; }
   .field { display: grid; grid-template-columns: 1fr 130px; gap: 10px; align-items: center; margin-top: 10px; }
-  .money { display: flex; align-items: center; border: 1.5px solid var(--edge); border-radius: 10px; background: var(--card); min-height: 44px; padding-left: 11px; }
-  .money:focus-within { outline: 3px solid var(--moss); outline-offset: 2px; }
+  .money { display: flex; align-items: center; border: 0; border-bottom: 1px solid var(--edge); border-radius: 0; background: var(--field); min-height: 44px; padding-left: 12px; font-family: var(--mono); }
+  .money:focus-within { outline: 2px solid var(--moss); outline-offset: -2px; }
   .money > span { color: var(--muted); }
-  .money input { border: 0; background: none; text-align: right; width: 100%; outline: none; min-height: 40px; padding-left: 4px; }
-  #quote { width: 100%; height: 150px; font: 13px/1.4 ui-monospace, monospace; border-radius: 10px; border: 1.5px solid var(--edge); background: var(--card); padding: 10px; margin-top: 10px; }
+  .money input { border: 0; background: none; text-align: right; width: 100%; outline: none; min-height: 43px; padding-left: 4px; font-family: var(--mono); }
+  #quote { width: 100%; height: 150px; font: 13px/1.45 var(--mono); border-radius: 0; border: 0; border-bottom: 1px solid var(--edge); background: var(--field); padding: 10px; margin-top: 10px; }
 
   /* Total pinned to the bottom of the panel */
   .totalbar { position: sticky; bottom: 0; margin-top: auto; z-index: 2; display: flex; align-items: center; gap: 14px;
@@ -813,44 +820,44 @@ svg.leaflet-image-layer.leaflet-interactive path {
               padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
   .totalbar .tbox { flex: 1; min-width: 0; display: grid; }
   .totalbar .tlabel { font-size: 14px; color: var(--muted); }
-  .totalbar .tbig { font: 700 30px/1.05 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
-  .totalbar .tsub { font-size: 13px; color: var(--muted); }
-  .totalbar button { border-radius: 999px; padding: 10px 22px; min-height: 50px; }
+  .totalbar .tbig { font: 600 28px/1.1 var(--mono); letter-spacing: -.02em; }
+  .totalbar .tsub { font: 13px/1.3 var(--mono); color: var(--muted); }
+  .totalbar button { border-radius: 0; padding: 10px 22px; min-height: 52px; align-self: stretch; }
   .toast { position: sticky; bottom: 90px; margin: 0 16px; z-index: 3; display: flex; align-items: center; gap: 12px; background: #263022; color: #F3F6EC;
-           border-radius: 14px; padding: 6px 6px 6px 16px; box-shadow: var(--shadow); }
+           border-radius: 0; padding: 6px 6px 6px 16px; box-shadow: var(--shadow); }
   .toast span { flex: 1; min-width: 0; }
-  .toast button { background: none; border: 0; color: #CFE3B5; font-weight: 700; }
+  .toast button { background: none; border: 0; color: #CFE3B5; font-weight: 600; }
 
   /* Jobs list */
-  #joblist { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .jobcard { display: flex; align-items: center; background: var(--card); border-radius: 14px; min-width: 0; }
-  .jobcard.current { box-shadow: 0 0 0 2px var(--moss); }
+  #joblist { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .jobcard { display: flex; align-items: center; background: var(--card); border-radius: 0; min-width: 0; }
+  .jobcard.current { box-shadow: inset 4px 0 0 var(--moss); }
   .jobcard .open { flex: 1; min-width: 0; border: 0; background: none; text-align: left; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 12px 6px 12px 16px; }
-  .jobcard .jname { font-weight: 700; overflow-wrap: anywhere; }
+  .jobcard .jname { font-weight: 600; overflow-wrap: anywhere; }
   .jobcard .muted { grid-column: 1; }
-  .jobcard .jtotal { grid-column: 2; grid-row: 1 / span 2; align-self: center; font: 700 18px var(--display); font-variant-numeric: tabular-nums; }
+  .jobcard .jtotal { grid-column: 2; grid-row: 1 / span 2; align-self: center; font: 600 17px var(--mono); }
   .jobcard .del { min-width: 64px; }
-  .pill { font-size: 12px; font-weight: 700; color: var(--moss); background: var(--moss-soft); border-radius: 999px; padding: 2px 8px; margin-left: 6px; white-space: nowrap; }
+  .pill { font-size: 12px; font-weight: 600; color: var(--ink); background: var(--moss-soft); border-radius: 0; padding: 2px 6px; margin-left: 6px; white-space: nowrap; }
 
   /* Settings */
-  .group { background: var(--card); border-radius: 14px; padding: 6px 14px; display: grid; }
+  .group { background: var(--card); border-radius: 0; padding: 4px 14px; display: grid; }
   .group .field { margin: 0; padding: 8px 0; border-bottom: 1px solid var(--line); }
   .group .field:last-child { border-bottom: 0; }
   .group .field label { display: flex; align-items: center; gap: 10px; }
-  .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--c); flex: none; }
+  .dot { width: 12px; height: 12px; border-radius: 0; background: var(--c); flex: none; }
   .note { margin-top: 8px; }
   .switch { display: flex; align-items: center; gap: 12px; cursor: pointer; min-height: 44px; }
-  .switch input { width: 22px; height: 22px; min-height: 0; accent-color: var(--moss); margin: 0; }
+  .switch input { width: 20px; height: 20px; min-height: 0; accent-color: var(--moss); margin: 0; border-radius: 0; }
   .homelabel { font-weight: 700; margin-bottom: 10px; }
-  .restore { margin-top: 12px; background: var(--card); border-radius: 14px; padding: 12px 14px; display: grid; gap: 8px; }
-  .restoreset { display: flex; gap: 10px; align-items: center; justify-content: space-between; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .restore { margin-top: 12px; background: var(--card); border-radius: 0; padding: 12px 14px; display: grid; gap: 8px; }
+  .restoreset { display: flex; gap: 10px; align-items: center; justify-content: space-between; font-size: 14px; }
   .restoreset > span { min-width: 0; }
   .restoreset button { flex: none; }
   @media (prefers-reduced-motion: no-preference) { button, .patch, .jobcard { transition: background-color .15s, box-shadow .15s; } }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700&family=Bricolage+Grotesque:opsz,wght@12..96,500..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 </head>
 <body>
 <div id="mapwrap">
@@ -879,7 +886,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <h1 class="grow">Saved jobs</h1>
       <button id="closejobs" aria-label="Back to current job">Back</button>
     </div>
-    <button id="newjob" class="primary">＋ New job</button>
+    <button id="newjob" class="primary" style="text-align:center">＋ New job</button>
     <div id="joblist"></div>
   </div>
 

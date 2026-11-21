@@ -1,6 +1,6 @@
-# Scything Pricer
+# Make Hay
 
-Draw patches on a satellite map, give each one a difficulty, and get a price for the scything job.
+Make Hay prices scything work. Draw patches on a satellite map, give each one a difficulty, and get a quote including travel.
 
 **Open the app:** https://harvgorst.github.io/scything-pricer/
 

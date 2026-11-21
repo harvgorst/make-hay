@@ -1,7 +1,7 @@
 {
-  "name": "Scything Pricer",
-  "short_name": "Scything Pricer",
-  "description": "Draw patches on a satellite map and price scything work by area and difficulty.",
+  "name": "Make Hay",
+  "short_name": "Make Hay",
+  "description": "Draw patches on a satellite map and price scything work by area, difficulty and travel.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

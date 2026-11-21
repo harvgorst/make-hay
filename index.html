@@ -713,15 +713,30 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #mapwrap { position: relative; min-height: 0; }
   #map { position: absolute; inset: 0; background: var(--ground); }
   #panel { position: relative; z-index: 500; background: var(--paper); display: flex; flex-direction: column; min-height: 0;
-           overflow-y: auto; overscroll-behavior: contain; box-shadow: -1px 0 0 var(--line); }
+           overflow: hidden; box-shadow: -1px 0 0 var(--line); }
+  .sheetbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; }
+  .sheetbody > div { padding: 18px max(16px, env(safe-area-inset-right, 0px)) 20px max(16px, env(safe-area-inset-left, 0px)); }
+  .sheethandle { display: none; }
+  /* Phones: the map fills the screen and the job sits in a sheet that is either a slim strip (map gets ~80%) or opened up */
   @media (max-width: 800px) {
-    :root { --sheet-overlap: 20px; }
-    body { grid-template-columns: 1fr; grid-template-rows: 50dvh 1fr; }
-    #panel { margin-top: calc(-1 * var(--sheet-overlap)); border-radius: 0; box-shadow: 0 -1px 0 var(--line), 0 -2px 6px rgb(24 34 18 / .12); }
+    body { display: block; }
+    #mapwrap { position: fixed; inset: 0; }
+    #panel { position: fixed; left: 0; right: 0; bottom: 0; height: var(--sheet-h, 128px); box-shadow: 0 -1px 0 var(--line), 0 -3px 10px rgb(24 34 18 / .16); }
+    #panel.anim { transition: height .25s cubic-bezier(.2, .8, .2, 1); }
+    #panel.collapsed .sheetbody { visibility: hidden; }
+    :root { --sheet-overlap: var(--sheet-h, 128px); }
     .leaflet-bottom { bottom: var(--sheet-overlap); }
-    body.drawing { grid-template-rows: 80dvh 1fr; }   /* more map to draw on while drawing */
+    .sheethandle { display: block; flex: none; position: relative; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+                   padding: 6px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+    .sheethandle .bar { width: 40px; height: 4px; background: var(--edge); margin: 0 auto 4px; }
+    .sheethandle .sum { display: flex; align-items: center; gap: 10px; min-height: 36px; padding-right: 44px; }
+    #panel:not(.collapsed) .sheethandle .sum { display: none; }
+    #panel:not(.collapsed) .sheethandle { min-height: 44px; border-bottom: 1px solid var(--line); }
+    .sheethandle .sumname { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sheethandle .chev { position: absolute; top: 2px; right: max(8px, env(safe-area-inset-right, 0px)); width: 44px; min-height: 40px; border: 0; padding: 0; text-align: center; font-size: 18px; color: var(--muted); background: none; }
+    #panel.collapsed .totalbar { border-top: 0; padding-top: 4px; }
   }
-  #panel > div:not(.totalbar):not(.toast) { padding: 18px max(16px, env(safe-area-inset-right, 0px)) 20px max(16px, env(safe-area-inset-left, 0px)); }
+  @media (max-width: 800px) and (prefers-reduced-motion: reduce) { #panel.anim { transition: none; } }
   #jobview, #jobsview, #settingsview { display: flex; flex-direction: column; gap: 22px; min-width: 0; flex: 1 0 auto; }
   #panel [hidden] { display: none !important; }
   [hidden] { display: none !important; }
@@ -815,15 +830,21 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #quote { width: 100%; height: 150px; font: 13px/1.45 var(--mono); border-radius: 0; border: 0; border-bottom: 1px solid var(--edge); background: var(--field); padding: 10px; margin-top: 10px; }
 
   /* Total pinned to the bottom of the panel */
-  .totalbar { position: sticky; bottom: 0; margin-top: auto; z-index: 2; display: flex; align-items: center; gap: 14px;
+  .totalbar { flex: none; z-index: 2; display: flex; align-items: center; gap: 14px;
               background: var(--paper); border-top: 1px solid var(--line);
               padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
   .totalbar .tbox { flex: 1; min-width: 0; display: grid; }
+  .totalbar .trow { display: flex; align-items: center; gap: 12px; }
+  .mix { display: flex; flex-direction: column; gap: 2px; width: 46px; flex: none; }
+  .mix i { display: block; height: 5px; background: color-mix(in srgb, var(--ink) 8%, transparent); }
+  .mix i b { display: block; height: 100%; background: var(--c); }
+  .jobcard .mix { width: 34px; gap: 1px; }
+  .jobcard .mix i { height: 4px; }
   .totalbar .tlabel { font-size: 14px; color: var(--muted); }
   .totalbar .tbig { font: 600 28px/1.1 var(--mono); letter-spacing: -.02em; }
   .totalbar .tsub { font: 13px/1.3 var(--mono); color: var(--muted); }
   .totalbar button { border-radius: 0; padding: 10px 22px; min-height: 52px; align-self: stretch; }
-  .toast { position: sticky; bottom: 90px; margin: 0 16px; z-index: 3; display: flex; align-items: center; gap: 12px; background: #263022; color: #F3F6EC;
+  .toast { position: absolute; left: 16px; right: 16px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 3; display: flex; align-items: center; gap: 12px; background: #263022; color: #F3F6EC;
            border-radius: 0; padding: 6px 6px 6px 16px; box-shadow: var(--shadow); }
   .toast span { flex: 1; min-width: 0; }
   .toast button { background: none; border: 0; color: #CFE3B5; font-weight: 600; }
@@ -835,7 +856,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .jobcard .open { flex: 1; min-width: 0; border: 0; background: none; text-align: left; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 12px 6px 12px 16px; }
   .jobcard .jname { font-weight: 600; overflow-wrap: anywhere; }
   .jobcard .muted { grid-column: 1; }
-  .jobcard .jtotal { grid-column: 2; grid-row: 1 / span 2; align-self: center; font: 600 17px var(--mono); }
+  .jobcard .jtotal { grid-column: 2; grid-row: 1 / span 2; align-self: center; font: 600 17px var(--mono); display: flex; align-items: center; gap: 10px; }
   .jobcard .del { min-width: 64px; }
   .pill { font-size: 12px; font-weight: 600; color: var(--ink); background: var(--moss-soft); border-radius: 0; padding: 2px 6px; margin-left: 6px; white-space: nowrap; }
 
@@ -881,6 +902,15 @@ svg.leaflet-image-layer.leaflet-interactive path {
 </div>
 
 <aside id="panel">
+  <div class="sheethandle" id="sheethandle">
+    <div class="bar"></div>
+    <div class="sum">
+      <span class="sumtext sumname" id="sumname"></span>
+      <span class="sumtext muted" id="sumcount"></span>
+    </div>
+    <button class="chev" id="sheettoggle" aria-label="Open job details" aria-expanded="false">▴</button>
+  </div>
+  <div class="sheetbody" id="sheetbody">
   <div id="jobsview" hidden>
     <div class="row">
       <h1 class="grow">Saved jobs</h1>
@@ -958,9 +988,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </section>
   </div>
 
+  </div>
   <div id="toast" class="toast" hidden role="status"><span id="toastmsg"></span><button id="toastundo">Undo</button></div>
   <div id="totalbar" class="totalbar">
-    <div class="tbox"><span class="tlabel">Total</span><span id="totalbig" class="tbig">£0</span><span id="totalsub" class="tsub"></span></div>
+    <div class="tbox"><span class="tlabel">Total</span><span class="trow"><span id="totalbig" class="tbig">£0</span><span id="totalmix" class="mix" role="img"></span></span><span id="totalsub" class="tsub"></span></div>
     <button id="copy" class="primary">Copy quote</button>
   </div>
 </aside>
@@ -1145,7 +1176,7 @@ function addLayer(p) {
   const layer = L.polygon(p.latlngs, styleFor(p)).addTo(map);
   layer.bindTooltip('', { permanent: true, direction: 'center', className: 'lbl' });
   // while drawing, let taps on an existing patch through so a corner can go on a neighbouring patch's edge
-  layer.on('click', e => { if (drawing) return; L.DomEvent.stopPropagation(e); select(p.id); });
+  layer.on('click', e => { if (drawing) return; L.DomEvent.stopPropagation(e); select(p.id); revealPatch(p.id); });
   const sync = () => {
     p.latlngs = layer.getLatLngs()[0].map(l => [l.lat, l.lng]);
     save(); render();
@@ -1184,13 +1215,13 @@ function updateDrawbar() {
 }
 map.on('pm:drawstart', e => {
   drawing = true; setHint(''); $('drawbar').hidden = false; $('toolrow').hidden = true;
-  document.body.classList.add('drawing'); map.invalidateSize({ pan: false });
+  if (phone.matches && sheetOpen) setSheet(false);
   e.workingLayer.on('pm:vertexadded', () => setTimeout(updateDrawbar, 0));
   updateDrawbar();
 });
 map.on('pm:drawend', () => {
   drawing = false; $('drawbar').hidden = true; $('toolrow').hidden = false;
-  document.body.classList.remove('drawing'); map.invalidateSize({ pan: false });
+
 });
 $('undocorner').onclick = () => { if (cornerCount()) drawTool()._removeLastVertex(); updateDrawbar(); };
 $('finishdraw').onclick = () => { if (cornerCount() >= 3) drawTool()._finishShape(); };
@@ -1200,12 +1231,12 @@ map.on('pm:create', e => {
   e.layer.remove();
   const p = { id: job.nextId++, name: 'Patch ' + (job.patches.length + 1), diff: 'medium', latlngs };
   job.patches.push(p); addLayer(p); save();
-  setTimeout(() => select(p.id), 0);
+  setTimeout(() => { select(p.id); revealPatch(p.id); }, 0);
 });
 
 // ---------- Current job panel ----------
 function render() {
-  const panel = $('panel'), keepScroll = panel.scrollTop, keepPage = window.scrollY;
+  const panel = $('sheetbody'), keepScroll = panel.scrollTop, keepPage = window.scrollY;
   panel.style.minHeight = panel.offsetHeight + 'px';   // stop the list rebuild collapsing the panel
   $('patches').innerHTML = job.patches.length ? '' :
     '<p class="empty">No patches yet. Find the site on the map, tap <b>＋ Draw patch</b>, then tap round the edge of the area.</p>';
@@ -1225,7 +1256,7 @@ function render() {
       </div>
       <div class="nums"><span>${fmtArea(a)} <span class="muted">${acres(a)}</span></span><span class="price">${money(price)}</span></div>
       ${p.id === selected ? '<div class="muted">Drag the corners on the map to reshape. Drag a small midpoint to add a corner. Long-press a corner to remove it.</div>' : ''}`;
-    el.onclick = ev => { if (!ev.target.closest('input,select,button') && selected !== p.id) { select(p.id); map.fitBounds(layer.getBounds(), { maxZoom: 20, padding: [40, 40] }); } };
+    el.onclick = ev => { if (!ev.target.closest('input,select,button') && selected !== p.id) { select(p.id); map.fitBounds(layer.getBounds(), { maxZoom: 20, ...mapPad() }); } };
     el.querySelector('input').onchange = ev => { p.name = ev.target.value || 'Patch'; save(); render(); };
     el.querySelector('select').onchange = ev => { p.diff = ev.target.value; save(); render(); };
     el.querySelector('button').onclick = () => {
@@ -1252,6 +1283,9 @@ function render() {
   if (et) et.onclick = et.onkeydown = ev => { if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') return; ev.preventDefault(); $('traveledit').hidden = !$('traveledit').hidden; render(); if (!$('traveledit').hidden) $('callout').focus(); };
   $('totalbig').textContent = money(t.total).replace(/\.00$/, '');
   $('totalsub').textContent = t.total !== t.exact ? 'Rounded from ' + money(t.exact) : minApplied ? 'Minimum charge' : '';
+  drawMix($('totalmix'), job);
+  $('sumname').textContent = job.name || 'Untitled job';
+  $('sumcount').textContent = job.patches.length ? job.patches.length + (job.patches.length === 1 ? ' patch' : ' patches') : 'No patches';
   renderTravel();
   const n = store.jobs.filter(j => !isEmpty(j) || j === job).length;
   $('jobcount').textContent = n > 1 ? ` (${n})` : '';
@@ -1335,7 +1369,7 @@ function loadJob(j, fit = true) {
   job = j; store.currentId = j.id;
   job.patches.forEach(addLayer);
   fillInputs(); save(false); render();
-  if (fit && job.patches.length) map.fitBounds(L.featureGroup(Object.values(layers)).getBounds(), { maxZoom: 19, padding: [30, 30] });
+  if (fit && job.patches.length) map.fitBounds(L.featureGroup(Object.values(layers)).getBounds(), { maxZoom: 19, ...mapPad() });
 }
 
 // ---------- Earlier rates ----------
@@ -1367,7 +1401,8 @@ $('restorehide').onclick = () => { store.restoreDismissed = true; save(false); r
 function showView(name) {
   for (const v of ['jobview', 'jobsview', 'settingsview']) $(v).hidden = v !== name;
   $('totalbar').hidden = name !== 'jobview';
-  $('panel').scrollTop = 0;
+  $('sheetbody').scrollTop = 0;
+  if (name !== 'jobview') setSheet(true);
   if (name === 'jobsview') renderJobs();
   if (name === 'settingsview') renderRestore();
 }
@@ -1386,9 +1421,10 @@ function renderJobs() {
       <button class="open" aria-label="Open ${esc(j.name || 'Untitled job')}">
         <span class="jname">${esc(j.name || 'Untitled job')}${j === job ? ' <span class="pill">Open</span>' : ''}</span>
         <span class="muted">${fmtDate(j.updated)}, ${j.patches.length} patch${j.patches.length === 1 ? '' : 'es'}, ${fmtArea(t.area)}</span>
-        <span class="jtotal">${money(t.total).replace(/\.00$/, '')}</span>
+        <span class="jtotal"><span class="mix" role="img"></span>${money(t.total).replace(/\.00$/, '')}</span>
       </button>
       <button class="iconbtn del" aria-label="Delete ${esc(j.name || 'Untitled job')}">${armedDelete === j.id ? 'Delete?' : '✕'}</button>`;
+    drawMix(el.querySelector('.mix'), j);
     el.querySelector('.open').onclick = () => { if (j !== job) loadJob(j); showJobs(false); };
     el.querySelector('.del').onclick = () => {
       if (armedDelete !== j.id) { armedDelete = j.id; renderJobs(); setTimeout(() => { if (armedDelete === j.id) { armedDelete = null; renderJobs(); } }, 3000); return; }
@@ -1427,6 +1463,82 @@ $('copy').onclick = async () => {
   setTimeout(() => $('copy').textContent = 'Copy quote', 2000);
 };
 
+// Difficulty mix: one bar per difficulty, its length the share of the job's area at that difficulty
+function drawMix(el, j) {
+  const area = Object.fromEntries(DIFFS.map(d => [d.key, 0])); let all = 0;
+  for (const p of j.patches) { const a = ringArea(p.latlngs); area[p.diff] += a; all += a; }
+  el.hidden = !all;
+  if (!all) return;
+  el.innerHTML = DIFFS.map(d => `<i style="--c:${d.color}"><b style="width:${(area[d.key] / all * 100).toFixed(1)}%"></b></i>`).join('');
+  el.setAttribute('aria-label', 'Area by difficulty: ' + DIFFS.map(d => `${d.name} ${Math.round(area[d.key] / all * 100)}%`).join(', '));
+  el.title = el.getAttribute('aria-label');
+}
+
+// ---------- Phone bottom sheet ----------
+const phone = matchMedia('(max-width: 800px)');
+const sheetOpenH = () => Math.round(innerHeight * 0.68);
+function sheetClosedH() {
+  const tb = $('totalbar'), hd = $('sheethandle');
+  return hd.offsetHeight + tb.offsetHeight;
+}
+let sheetOpen = !!store.sheetOpen;
+function setSheet(open, animate = true) {
+  sheetOpen = open; store.sheetOpen = open; save(false);
+  applySheet(animate);
+}
+function applySheet(animate = false) {
+  const panel = $('panel');
+  panel.classList.toggle('anim', animate);
+  panel.classList.toggle('collapsed', phone.matches && !sheetOpen);
+  if (!phone.matches) { document.documentElement.style.removeProperty('--sheet-h'); panel.style.height = ''; return; }
+  panel.style.height = '';
+  // measure the strip with the panel collapsed so the height matches its content
+  const h = sheetOpen ? sheetOpenH() : sheetClosedH();
+  document.documentElement.style.setProperty('--sheet-h', h + 'px');
+  $('sheettoggle').textContent = sheetOpen ? '▾' : '▴';
+  $('sheettoggle').setAttribute('aria-expanded', sheetOpen);
+  $('sheettoggle').setAttribute('aria-label', sheetOpen ? 'Close job details' : 'Open job details');
+}
+// Tap the strip to open or close; drag the handle to follow your finger, then it settles open or closed
+(() => {
+  const hd = $('sheethandle'); let startY = null, startH = 0, moved = false;
+  hd.addEventListener('pointerdown', e => {
+    if (!phone.matches) return;
+    startY = e.clientY; startH = $('panel').offsetHeight; moved = false;
+    $('panel').classList.remove('anim'); hd.setPointerCapture(e.pointerId);
+  });
+  hd.addEventListener('pointermove', e => {
+    if (startY === null) return;
+    const dy = e.clientY - startY; if (Math.abs(dy) > 6) moved = true;
+    if (!moved) return;
+    const h = Math.max(sheetClosedH(), Math.min(innerHeight * 0.9, startH - dy));
+    $('panel').classList.remove('collapsed');
+    document.documentElement.style.setProperty('--sheet-h', h + 'px');
+  });
+  const end = e => {
+    if (startY === null) return;
+    const dy = e.clientY - startY; startY = null;
+    if (!moved) { setSheet(!sheetOpen); return; }
+    setSheet(dy < 0 ? (dy < -30 || sheetOpen) : !(dy > 30 || !sheetOpen));
+  };
+  hd.addEventListener('pointerup', end);
+  hd.addEventListener('pointercancel', e => { startY = null; applySheet(true); });
+})();
+$('sheettoggle').onclick = e => { if (e.detail === 0) setSheet(!sheetOpen); };   // keyboard; taps are handled by the handle
+phone.addEventListener('change', () => applySheet());
+addEventListener('resize', () => applySheet());
+// keep the part of the map you are looking at clear of the sheet
+const mapPad = () => ({ paddingTopLeft: [30, 140], paddingBottomRight: [30, (phone.matches ? $('panel').offsetHeight : 0) + 30] });
+function revealPatch(id) {
+  if (phone.matches && !sheetOpen) setSheet(true);
+  // once the sheet has opened, nudge the map so the patch sits in the visible part above it
+  setTimeout(() => { if (layers[id]) map.panInside(layers[id].getBounds().getCenter(), mapPad()); }, phone.matches ? 300 : 0);
+  requestAnimationFrame(() => {
+    const card = $('patches').children[job.patches.findIndex(p => p.id === id)];
+    if (card) card.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  });
+}
+
 // Short message with Undo at the bottom of the panel
 let toastTimer = null;
 function toast(msg, undo) {
@@ -1452,7 +1564,9 @@ $('locate').onclick = () => map.locate({ setView: true, maxZoom: 19 });
 map.on('locationerror', () => flash('Location unavailable'));
 
 drawHome();
+applySheet();
 loadJob(job, !store.view);
+applySheet();
 renderRestore();
 save(false);
 // Ask the browser not to clear this site's saved data when space is short or the site hasn't been opened for a while

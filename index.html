@@ -728,6 +728,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .seg { display: flex; border: 1px solid var(--edge); }
   .seg label { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 42px; cursor: pointer; border-right: 1px solid var(--edge); font-size: 14px; }
   .seg label:last-child { border-right: 0; }
+  #travelfields.off { opacity: .5; }
   .seg input { position: absolute; opacity: 0; pointer-events: none; }
   .seg label:has(input:checked) { background: var(--moss); color: var(--moss-ink); font-weight: 600; }
   .seg label:has(input:focus-visible) { outline: 2px solid var(--moss); outline-offset: -4px; }
@@ -981,11 +982,20 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </div>
 
   <div id="settingsview" hidden>
+    <section id="set-units">
+      <h2>Units</h2>
+      <div class="seg" role="radiogroup" aria-label="Area units">
+        <label><input type="radio" name="units" value="acre"> Acres</label>
+        <label><input type="radio" name="units" value="m2"> m²</label>
+        <label><input type="radio" name="units" value="ft2"> ft²</label>
+      </div>
+      <p class="muted note">Used for areas, rates and quotes. Prices don't change when you switch.</p>
+    </section>
     <div class="jumps" aria-label="Jump to">
       <a href="#set-rates">Rates</a><a href="#set-travel">Travel</a><a href="#set-home">Home</a><a href="#set-quote">Quote</a><a href="#set-feedback">Feedback</a>
     </div>
     <section id="set-rates">
-      <h2>Rates by difficulty, per m²</h2>
+      <h2 id="rateshead">Rates by difficulty, per acre</h2>
       <div class="group" id="rates"></div>
       <div class="group" style="margin-top:8px">
         <div class="field"><label for="minimum">Minimum charge</label><span class="money"><span>£</span><input id="minimum" type="number" min="0" step="1" inputmode="decimal"></span></div>
@@ -999,12 +1009,15 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </section>
     <section id="set-travel">
       <h2>Travel</h2>
+      <label class="switch" for="travelcharge"><input id="travelcharge" type="checkbox"> Charge for travel</label>
+      <div id="travelfields">
       <div class="group">
         <div class="field"><label for="permile">Rate per mile</label><span class="money"><span>£</span><input id="permile" type="number" min="0" step="0.01" inputmode="decimal"></span></div>
         <div class="field"><label for="freemiles">Free within (miles)</label><span class="money"><span></span><input id="freemiles" type="number" min="0" step="1" inputmode="decimal"></span></div>
       </div>
       <label class="switch" for="returntrip" style="margin-top:6px"><input id="returntrip" type="checkbox"> Count the return journey</label>
       <p class="muted note">Driving distance from home to the middle of the job. Miles beyond the free distance are charged, each way when the return journey is counted.</p>
+      </div>
     </section>
     <section id="set-home">
       <h2>Home or base</h2>
@@ -1056,6 +1069,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <h2>Quote</h2>
       <div class="totals" id="totals"></div>
       <p class="muted travelnote" id="travelnote"></p>
+      <label class="switch" for="notravel" id="notravelrow"><input id="notravel" type="checkbox"> No travel charge for this job</label>
       <div id="traveledit" class="field" hidden>
         <label for="callout">Travel for this job</label>
         <span class="money"><span>£</span><input id="callout" type="number" min="0" step="0.01" inputmode="decimal"></span>
@@ -1093,8 +1107,20 @@ const KEY = 'scythe-pricer-v2', OLD_KEY = 'scythe-pricer-v1';
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const money = n => '£' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const fmtArea = a => Math.round(a).toLocaleString('en-GB') + ' m²';
-const acres = a => (a / 4046.856).toFixed(2) + ' ac';
+// Areas are stored in m² and rates per m²; the Units setting only changes how they are shown and typed
+const UNITS = {
+  acre: { m2: 4046.8564224, label: 'acre', rateDp: 2, step: '1' },
+  m2:   { m2: 1,            label: 'm²',   rateDp: 2, step: '0.01' },
+  ft2:  { m2: 0.09290304,   label: 'ft²',  rateDp: 4, step: '0.0001' },
+};
+const unit = () => UNITS[(typeof store !== 'undefined' && store.units) || 'acre'];
+const fmtIn = (a, u) => u === 'acre' ? (a / UNITS.acre.m2).toFixed(2) + ((a / UNITS.acre.m2).toFixed(2) === '1.00' ? ' acre' : ' acres')
+                       : Math.round(a / UNITS[u].m2).toLocaleString('en-GB') + ' ' + UNITS[u].label;
+const fmtArea = a => fmtIn(a, (typeof store !== 'undefined' && store.units) || 'acre');
+// the second, smaller figure: m² when working in acres, otherwise acres
+const acres = a => ((typeof store !== 'undefined' && store.units) || 'acre') === 'acre' ? fmtIn(a, 'm2') : fmtIn(a, 'acre');
+const rateIn = perM2 => (+perM2 * unit().m2).toFixed(unit().rateDp);
+const rateLabel = perM2 => '£' + (+perM2 * unit().m2).toLocaleString('en-GB', { minimumFractionDigits: unit().rateDp, maximumFractionDigits: unit().rateDp });
 const fmtDate = t => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 // ---------- Storage ----------
@@ -1133,7 +1159,8 @@ if (!validRates(store.rates)) {
   store.rates = found ? { ...found } : { ...FACTORY };
 }
 if (typeof store.round10 !== 'boolean') store.round10 = true;
-store.travel = Object.assign({ perMile: 0.45, freeMiles: 5, returnTrip: true }, store.travel);
+store.travel = Object.assign({ perMile: 0.45, freeMiles: 5, returnTrip: true, charge: true }, store.travel);
+if (!UNITS[store.units]) store.units = 'acre';
 if (store.home === undefined) store.home = null;
 // Earlier versions had a typed call-out per job: keep any amount already entered as that job's travel figure
 for (const j of store.jobs) if (!('travelOverride' in j)) { j.travelOverride = +j.callout > 0 ? +j.callout : null; delete j.callout; }
@@ -1182,6 +1209,7 @@ const routeKey = (home, c) => [home.lat, home.lng, c[0], c[1]].map(v => v.toFixe
 function travelFor(j) {
   const t = store.travel, out = { cost: 0, miles: null, approx: false, override: j.travelOverride != null, nohome: !store.home };
   if (!j.patches.length) return out;
+  if (!t.charge || j.noTravel) { out.off = true; return out; }
   if (store.home) {
     const c = jobCentre(j), key = routeKey(store.home, c);
     // a straight-line fallback gets one more try at a proper route each time the app is opened
@@ -1397,7 +1425,7 @@ function render() {
   $('totals').innerHTML = `
     <span>Total area</span><span class="r">${fmtArea(t.area)} <span class="muted">${acres(t.area)}</span></span>
     <span>Scything</span><span class="r">${money(t.sub)}</span>
-    <span>Travel ${job.patches.length ? `<a class="link" id="edittravel" role="button" tabindex="0">${$('traveledit').hidden ? 'Edit' : 'Hide'}</a>` : ''}</span><span class="r">${money(t.callout)}</span>
+    ${travelFor(job).off ? '' : `<span>Travel ${job.patches.length ? `<a class="link" id="edittravel" role="button" tabindex="0">${$('traveledit').hidden ? 'Edit' : 'Hide'}</a>` : ''}</span><span class="r">${money(t.callout)}</span>`}
     ${minApplied ? `<span>Minimum charge applied</span><span class="r">${money(t.exact)}</span>` : ''}`;
   const et = $('edittravel');
   if (et) et.onclick = et.onkeydown = ev => { if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') return; ev.preventDefault(); $('traveledit').hidden = !$('traveledit').hidden; render(); if (!$('traveledit').hidden) $('callout').focus(); };
@@ -1424,13 +1452,14 @@ $('rates').innerHTML = DIFFS.map(d =>
 const fix2 = v => (+v).toFixed(2);
 for (const d of DIFFS) $('r-' + d.key).oninput = e => {
   const v = readNum(e.target.value); if (v === null) return;
-  store.rates[d.key] = v; save(false); render(); renderRestore();
+  store.rates[d.key] = v / unit().m2; save(false); render(); renderRestore();
 };
-for (const d of DIFFS) $('r-' + d.key).onblur = e => { e.target.value = fix2(store.rates[d.key]); };
+for (const d of DIFFS) $('r-' + d.key).onblur = e => { e.target.value = rateIn(store.rates[d.key]); };
 for (const [id, k] of [['permile', 'perMile'], ['freemiles', 'freeMiles']]) {
   $(id).oninput = e => { const v = readNum(e.target.value); if (v === null) return; store.travel[k] = v; save(false); render(); };
   $(id).onblur = e => { e.target.value = k === 'perMile' ? fix2(store.travel[k]) : store.travel[k]; };
 }
+$('travelcharge').onchange = e => { store.travel.charge = e.target.checked; save(false); fillInputs(); render(); };
 $('returntrip').onchange = e => { store.travel.returnTrip = e.target.checked; save(false); render(); };
 function homeLabel() {
   $('homelabel').innerHTML = store.home ? '⌂ ' + esc(store.home.label) : '<span class="muted">No home set yet.</span>';
@@ -1454,12 +1483,20 @@ store.biz = Object.assign({ name: '', phone: '' }, store.biz);
 $('bizname').value = store.biz.name; $('bizphone').value = store.biz.phone;
 $('bizname').oninput = e => { store.biz.name = e.target.value.trim(); save(false); };
 $('bizphone').oninput = e => { store.biz.phone = e.target.value.trim(); save(false); };
+for (const r of document.querySelectorAll('input[name=units]')) r.onchange = () => {
+  store.units = r.value; save(false); fillInputs(); render(); renderRestore();
+  $('defaultrates').textContent = defaultsLabel();
+};
 $('round10').onchange = e => { store.round10 = e.target.checked; save(false); render(); };
 $('minimum').oninput = e => { store.minimum = readNum(e.target.value) ?? 0; save(false); render(); };
+$('notravel').onchange = e => { job.noTravel = e.target.checked; save(); render(); };
 $('callout').oninput = e => { job.travelOverride = readNum(e.target.value); save(); render(); };
 const miles = m => m.toFixed(1) + ' mile' + (m.toFixed(1) === '1.0' ? '' : 's');
 function renderTravel() {
   const tr = travelFor(job), t = store.travel, note = $('travelnote');
+  $('notravelrow').hidden = !t.charge || !job.patches.length;
+  $('notravel').checked = !!job.noTravel;
+  if (tr.off) { note.hidden = true; $('traveledit').hidden = true; return; }
   if (document.activeElement !== $('callout')) $('callout').value = tr.override ? job.travelOverride : (tr.estimate != null && job.patches.length ? tr.estimate.toFixed(2) : '');
   let s = '';
   if (!job.patches.length) s = '';
@@ -1479,7 +1516,12 @@ $('jobname').oninput = e => { job.name = e.target.value; save(); $('sumname').te
 
 function fillInputs() {
   $('jobname').value = job.name;
-  for (const d of DIFFS) $('r-' + d.key).value = fix2(store.rates[d.key]);
+  for (const d of DIFFS) { $('r-' + d.key).value = rateIn(store.rates[d.key]); $('r-' + d.key).step = unit().step; }
+  $('rateshead').textContent = 'Rates by difficulty, per ' + unit().label;
+  for (const r of document.querySelectorAll('input[name=units]')) r.checked = r.value === store.units;
+  $('travelcharge').checked = store.travel.charge;
+  $('travelfields').classList.toggle('off', !store.travel.charge);
+  for (const el of $('travelfields').querySelectorAll('input')) el.disabled = !store.travel.charge;
   $('round10').checked = store.round10;
   $('minimum').value = store.minimum || '';
   $('permile').value = fix2(store.travel.perMile); $('freemiles').value = store.travel.freeMiles; $('returntrip').checked = store.travel.returnTrip;
@@ -1514,7 +1556,7 @@ function renderRestore() {
   $('restore').hidden = !sets.length;
   $('restorelist').innerHTML = sets.map((s, i) => `
     <div class="restoreset">
-      <span>${DIFFS.map(d => `${d.name} £${(+s.r[d.key]).toFixed(2)}`).join(', ')}<br><span class="muted">from ${esc(s.from)}</span></span>
+      <span>${DIFFS.map(d => `${d.name} ${rateLabel(s.r[d.key])}`).join(', ')} per ${unit().label}<br><span class="muted">from ${esc(s.from)}</span></span>
       <button data-i="${i}">Use these</button>
     </div>`).join('');
   $('restorelist').querySelectorAll('button').forEach(b => b.onclick = () => {
@@ -1524,7 +1566,7 @@ function renderRestore() {
 $('restorehide').onclick = () => { store.restoreDismissed = true; save(false); renderRestore(); };
 
 // Put the standard rates back, after a second tap to confirm
-const defaultsLabel = () => 'Use standard rates (' + DIFFS.map(d => '£' + d.rate.toFixed(2)).join(', ') + ')';
+const defaultsLabel = () => 'Use standard rates (' + DIFFS.map(d => rateLabel(d.rate)).join(', ') + ' per ' + unit().label + ')';
 let armedDefaults = null;
 $('defaultrates').textContent = defaultsLabel();
 $('defaultrates').onclick = () => {
@@ -1556,7 +1598,7 @@ function feedbackText() {
     const t = jobTotals(job);
     lines.push('', 'Job: ' + job.patches.length + ' patches, ' + fmtArea(t.area) + ', total ' + money(t.total));
     for (const p of job.patches) lines.push('- ' + D[p.diff].name + ', ' + fmtArea(ringArea(p.latlngs)) + ', ' + p.latlngs.length + ' corners');
-    lines.push('Rates: ' + DIFFS.map(d => d.name + ' ' + fix2(store.rates[d.key])).join(', ') + '; minimum ' + (store.minimum || 0));
+    lines.push('Rates per ' + unit().label + ': ' + DIFFS.map(d => d.name + ' ' + rateIn(store.rates[d.key])).join(', ') + '; minimum ' + (store.minimum || 0));
     lines.push('Travel: ' + fix2(store.travel.perMile) + '/mile, ' + store.travel.freeMiles + ' free, return ' + (store.travel.returnTrip ? 'yes' : 'no') + ', home ' + (store.home ? 'set' : 'not set') + '; rounding ' + (store.round10 ? 'on' : 'off'));
   }
   return { type, body: lines.join('\n') };
@@ -1632,7 +1674,7 @@ $('copy').onclick = async () => {
     const a = ringArea(p.latlngs);
     lines.push(`${p.name}, ${fmtArea(a)}: ${money(a * (store.rates[p.diff] || 0))}`);
   }
-  lines.push('', 'Total area: ' + fmtArea(t.area) + ' (' + (t.area / 4046.856).toFixed(2) + ' acres)');
+  lines.push('', 'Total area: ' + fmtArea(t.area));
   lines.push('Scything: ' + money(t.sub));
   if (t.callout) lines.push('Travel: ' + money(t.callout));
   if (t.exact > t.sub + t.callout) lines.push('Minimum charge: ' + money(t.exact));

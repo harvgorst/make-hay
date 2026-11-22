@@ -11,6 +11,10 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 1.2.0
+
+- Difficulty guides: a one-line description of each rating under the rates in Settings, on each patch card, and in a **Guide** list you can pick from while editing a patch.
+
 ## Version 1.1.0
 
 - Patch bar: a grab bar and **Done** to finish editing. **Delete patch** moves to the bottom and needs a second tap.

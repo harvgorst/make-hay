@@ -751,6 +751,23 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .updatebar span { flex: 1; min-width: 0; }
   .updatebar button { border: 1px solid var(--moss-ink); color: var(--moss-ink); font-weight: 700; text-align: center; }
   body.editing .updatebar, body.drawing .updatebar { display: none !important; }
+  .ratelabel { align-items: flex-start !important; }
+  .ratelabel .dot { margin-top: 4px; }
+  .guide { display: block; font-size: 12px; line-height: 1.35; color: var(--muted); font-weight: 400; margin-top: 2px; max-width: 26ch; }
+  .guideline { display: flex; align-items: flex-start; gap: 10px; padding-right: 10px; }
+  .guideline .muted { flex: 1; min-width: 0; font-size: 12px; line-height: 1.35; }
+  .guidebtn { flex: none; min-height: 36px; padding: 4px 10px; font-size: 13px; border-color: var(--edge); text-align: center; }
+  .patchbar .guidebtn { min-height: 44px; }
+  .guidesheet { position: fixed; z-index: 1250; right: 16px; width: 368px; bottom: 110px; background: var(--paper); box-shadow: var(--shadow), 0 8px 30px rgb(0 0 0 / .25);
+                padding: 12px 14px 14px; display: grid; gap: 8px; max-height: calc(100dvh - 120px); overflow-y: auto; }
+  .guidesheet h2 { margin: 0; font-size: 15px; color: var(--ink); }
+  #guidelist { display: grid; gap: 4px; }
+  .guideopt { display: grid; gap: 2px; text-align: left; border: 0; background: var(--card); box-shadow: inset 5px 0 0 var(--c); padding: 8px 10px 8px 16px; min-height: 52px; }
+  .guideopt.on { box-shadow: inset 5px 0 0 var(--c), inset 0 0 0 2px var(--moss); }
+  .guideopt .gname { font-weight: 600; display: flex; justify-content: space-between; gap: 8px; }
+  .guideopt .grate { font: 12px var(--mono); color: var(--muted); font-weight: 400; }
+  .guideopt .gtext { font-size: 13px; line-height: 1.35; color: var(--muted); }
+  @media (max-width: 800px) { .guidesheet { left: 10px; right: 10px; width: auto; bottom: calc(var(--sheet-h, 120px) + 8px); } }
   .diag { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; background: var(--card); padding: 10px 14px; font: 13px/1.4 var(--mono); }
   .diag span:nth-child(odd) { color: var(--muted); }
   #saprobe { position: fixed; top: 0; left: 0; width: 1px; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); visibility: hidden; pointer-events: none; }
@@ -998,6 +1015,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </div>
     <div class="pbrow">
       <span id="pbnums" class="pbnums grow"></span>
+      <button id="pbguide" class="guidebtn">Guide</button>
       <button id="pbdone" class="primary">Done ▾</button>
     </div>
     <div class="pbrow pbfoot"><button id="pbdel" class="dangerlink">Delete patch</button><span class="muted pbhint">Double-tap a corner to remove it</span></div>
@@ -1124,6 +1142,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </div>
 
   </div>
+  <div id="guidesheet" class="guidesheet" hidden role="dialog" aria-labelledby="guidetitle">
+    <div class="row"><h2 id="guidetitle" class="grow">Difficulty guide</h2><button id="guideclose">Close</button></div>
+    <div id="guidelist"></div>
+  </div>
   <div id="toast" class="toast" hidden role="status"><span id="toastmsg"></span><button id="toastundo">Undo</button></div>
   <div id="totalbar" class="totalbar">
     <div class="tbox"><span class="tlabel">Total</span><span class="trow"><span id="totalbig" class="tbig">£0</span><span id="totalmix" class="mix" role="img"></span></span><span id="totalsub" class="tsub"></span></div>
@@ -1142,10 +1164,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
 </script>
 <script>
 const DIFFS = [
-  { key: 'easy',   name: 'Easy',      color: '#7FB069', rate: 0.36 },
-  { key: 'medium', name: 'Medium',    color: '#E2B93B', rate: 0.38 },
-  { key: 'hard',   name: 'Hard',      color: '#D9783A', rate: 0.42 },
-  { key: 'vhard',  name: 'Very hard', color: '#B5403A', rate: 0.44 },
+  { key: 'easy',   name: 'Easy',      color: '#7FB069', rate: 0.36, guide: 'Lawns and thin, early-season meadow. Cuts clean, easy raking.' },
+  { key: 'medium', name: 'Medium',    color: '#E2B93B', rate: 0.38, guide: 'Lush meadow later in the season. Still cuts clean, but plenty to rake.' },
+  { key: 'hard',   name: 'Hard',      color: '#D9783A', rate: 0.42, guide: 'Overgrown, late-season meadow with woody stems and some lodged grass. Needs a machine finish.' },
+  { key: 'vhard',  name: 'Very hard', color: '#B5403A', rate: 0.44, guide: 'Brambles, bracken, nettles or scrub, or fully lodged grass. Needs dethatching and a machine finish.' },
 ];
 const D = Object.fromEntries(DIFFS.map(d => [d.key, d]));
 const KEY = 'scythe-pricer-v2', OLD_KEY = 'scythe-pricer-v1';
@@ -1382,6 +1404,7 @@ const editOptions = () => ({
 })();
 const isPhone = () => matchMedia('(max-width: 800px)').matches;
 function select(id) {
+  if (id !== selected && typeof closeGuide === 'function' && !$('guidesheet').hidden) closeGuide();
   selected = id;
   document.body.classList.toggle('editing', id != null && isPhone());
   for (const [pid, layer] of Object.entries(layers)) {
@@ -1517,6 +1540,7 @@ function render() {
         <button class="iconbtn" title="Delete patch" aria-label="Delete ${esc(p.name)}">✕</button>
       </div>
       <div class="nums"><span>${fmtArea(a)} <span class="muted">${acres(a)}</span></span><span class="price">${money(price)}</span></div>
+      <div class="guideline"><span class="muted">${D[p.diff].guide}</span><button class="guidebtn" data-guide="${p.id}">Guide</button></div>
       ${p.id === selected ? '<div class="muted">Drag corners on the map to reshape. Double-tap a corner to remove it. Drag a small midpoint to add one.</div>' : ''}`;
     el.onclick = ev => {
       if (ev.target.closest('input,select,button') || selected === p.id) return;
@@ -1526,7 +1550,8 @@ function render() {
     };
     el.querySelector('input').onchange = ev => { p.name = ev.target.value || 'Patch'; save(); render(); };
     el.querySelector('select').onchange = ev => { p.diff = ev.target.value; save(); render(); };
-    el.querySelector('button').onclick = () => deletePatch(p);
+    el.querySelector('button.iconbtn').onclick = () => deletePatch(p);
+    el.querySelector('.guidebtn').onclick = () => openGuide(p.id);
     $('patches').appendChild(el);
   }
   const t = jobTotals(job);
@@ -1557,7 +1582,7 @@ function render() {
 // Rates and minimum charge are shared by all jobs. A blank or half-typed box is ignored, so a rate is never wiped to zero by accident.
 const readNum = v => (v === '' || !isFinite(+v)) ? null : +v;
 $('rates').innerHTML = DIFFS.map(d =>
-  `<div class="field"><label for="r-${d.key}"><span class="dot" style="--c:${d.color}"></span>${d.name}</label><span class="money"><span>£</span><input id="r-${d.key}" type="number" min="0" step="0.01" inputmode="decimal"></span></div>`).join('');
+  `<div class="field"><label for="r-${d.key}" class="ratelabel"><span class="dot" style="--c:${d.color}"></span><span>${d.name}<small class="guide">${d.guide}</small></span></label><span class="money"><span>£</span><input id="r-${d.key}" type="number" min="0" step="0.01" inputmode="decimal"></span></div>`).join('');
 const fix2 = v => (+v).toFixed(2);
 for (const d of DIFFS) $('r-' + d.key).oninput = e => {
   const v = readNum(e.target.value); if (v === null) return;
@@ -1639,6 +1664,7 @@ function fillInputs() {
   $('traveledit').hidden = job.travelOverride == null;
 }
 function loadJob(j, fit = true) {
+  if (typeof closeGuide === 'function') closeGuide();
   if (drawing) map.pm.disableDraw();
   selected = null; clearLayers();
   // drop an untouched blank job instead of leaving it in the list
@@ -1697,7 +1723,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.1.0';   // keep in step with version.json
+const APP_VERSION = '1.2.0';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');
@@ -1909,6 +1935,29 @@ function revealPatch(id) {
     if (card) card.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   });
 }
+
+// Difficulty guide: what each rating means; tap one to give it to the patch
+let guideFor = null;
+function openGuide(id) {
+  const p = job.patches.find(x => x.id === id); if (!p) return;
+  guideFor = id;
+  $('guidelist').innerHTML = DIFFS.map(d => `
+    <button class="guideopt${d.key === p.diff ? ' on' : ''}" data-k="${d.key}" style="--c:${d.color}">
+      <span class="gname">${d.name}<span class="grate">${rateLabel(store.rates[d.key])} per ${unit().label}</span></span>
+      <span class="gtext">${d.guide}</span>
+    </button>`).join('');
+  $('guidelist').querySelectorAll('.guideopt').forEach(b => b.onclick = () => {
+    const q = job.patches.find(x => x.id === guideFor);
+    if (q) { q.diff = b.dataset.k; save(); render(); }
+    closeGuide();
+  });
+  $('guidesheet').hidden = false;
+}
+function closeGuide() { $('guidesheet').hidden = true; guideFor = null; }
+$('guideclose').onclick = closeGuide;
+$('pbguide').onclick = () => { if (selected != null) openGuide(selected); };
+addEventListener('keydown', e => { if (e.key === 'Escape' && !$('guidesheet').hidden) closeGuide(); });
+document.body.appendChild($('guidesheet'));
 
 // Short message with Undo, floating just above the panel (outside it, so the map can't cover it)
 document.body.appendChild($('toast'));

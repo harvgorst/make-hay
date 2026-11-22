@@ -11,6 +11,10 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 1.0.1
+
+- Fix: double-tapping a corner now removes it on iPhone.
+
 ## Version 1.0.0
 
 - **Map**: satellite imagery with road and place-name labels, address and postcode search, and your current location.

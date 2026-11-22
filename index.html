@@ -1339,13 +1339,34 @@ function clearLayers() {
 }
 // Corners: drag to move; double-tap to remove (long-press does nothing, so holding to drag can't delete)
 const editOptions = () => ({
-  snappable: true, snapDistance: SNAP, allowSelfIntersection: false, removeVertexOn: 'dblclick',
+  snappable: true, snapDistance: SNAP, allowSelfIntersection: false, removeVertexOn: 'mh-unused',   // our own double-tap below
   removeVertexValidation: ({ layer }) => {
     if (layer.getLatLngs()[0].length > 3) return true;
     flash('A patch needs at least 3 corners. Delete the patch instead.');
     return false;
   },
 });
+// Double-tap a corner to remove it. Detected from raw pointer events, which iPhones deliver reliably for draggable handles.
+(() => {
+  let down = null, last = null;
+  const corner = e => { const el = e.target.closest && e.target.closest('.marker-icon'); return el && !el.classList.contains('marker-icon-middle') ? el : null; };
+  const box = map.getContainer();
+  box.addEventListener('pointerdown', e => { const el = corner(e); down = el && selected != null && !drawing ? { el, x: e.clientX, y: e.clientY } : null; }, true);
+  box.addEventListener('pointerup', e => {
+    if (!down) return;
+    const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y) > 10, el = down.el; down = null;
+    if (moved) { last = null; return; }
+    const now = Date.now();
+    if (last && last.el === el && now - last.t < 450 && Math.hypot(e.clientX - last.x, e.clientY - last.y) < 30) {
+      last = null;
+      const layer = layers[selected];
+      const marker = layer && layer.pm._markers && layer.pm._markers.flat(Infinity).find(m => m._icon === el);
+      // wait for the map library to finish handling this tap before taking the handle away
+      if (marker) { window.__keepSelectUntil = now + 500; setTimeout(() => layer.pm._removeMarker({ target: marker, type: 'dbltap' }), 0); }
+    } else last = { el, t: now, x: e.clientX, y: e.clientY };
+  }, true);
+  // the tap that removed a corner then lands on the map: keep the patch open (map double-tap zoom is already off while editing)
+})();
 const isPhone = () => matchMedia('(max-width: 800px)').matches;
 function select(id) {
   selected = id;
@@ -1386,7 +1407,7 @@ function deletePatch(p) {
     job.patches.splice(Math.min(at, job.patches.length), 0, p); addLayer(p); save(); render();
   });
 }
-map.on('click', () => { if (!drawing && selected !== null) select(null); });
+map.on('click', () => { if (!drawing && selected !== null && Date.now() > (window.__keepSelectUntil || 0)) select(null); });
 
 // Drawing
 function setHint(t) { $('hint').textContent = t || ''; $('hint').hidden = !t; }
@@ -1642,7 +1663,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.0.0';   // keep in step with version.json
+const APP_VERSION = '1.0.1';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');

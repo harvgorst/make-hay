@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Make Hay">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>/* required styles */
 
 .leaflet-pane,
@@ -697,7 +697,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     --display: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;   /* retro typewriter-style figures */
-    --sheet-overlap: 0px;
+    --sheet-overlap: env(safe-area-inset-bottom, 0px);
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -715,6 +715,23 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #panel { position: relative; z-index: 500; background: var(--paper); display: flex; flex-direction: column; min-height: 0;
            overflow: hidden; box-shadow: -1px 0 0 var(--line); }
   .sheetbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; }
+  /* Full screen from the home screen: the map runs under the status bar and notch; a soft shade keeps the clock readable */
+  body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: calc(env(safe-area-inset-top, 0px) * 1.4); z-index: 1100; pointer-events: none;
+                 background: linear-gradient(rgb(0 0 0 / .42), rgb(0 0 0 / 0)); }
+  .leaflet-top { top: env(safe-area-inset-top, 0px); }
+  .leaflet-left { left: env(safe-area-inset-left, 0px); }
+  .leaflet-right { right: env(safe-area-inset-right, 0px); }
+  .leaflet-bottom { bottom: env(safe-area-inset-bottom, 0px); }
+  /* Phones on their side: keep the map toolbar on one row */
+  @media (min-width: 801px) and (max-height: 500px) {
+    body .toolbar { flex-direction: row; align-items: flex-start; left: max(10px, env(safe-area-inset-left, 0px)); }
+    .leaflet-control-zoom { display: none; }
+    .leaflet-container .leaflet-control-attribution { max-width: 240px; }
+    body .searchbox { flex: 1 1 auto; min-width: 0; }
+    body .toolrow { flex-wrap: nowrap; flex: none; }
+    .toolrow .long { display: none; }
+    #locate { width: 44px; padding: 0; text-align: center; font-size: 18px; }
+  }
   .sheetbody > div { padding: 14px max(16px, env(safe-area-inset-right, 0px)) 18px max(16px, env(safe-area-inset-left, 0px)); }
   .tabs { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: 1fr 1.3fr 1fr; background: var(--paper); border-bottom: 1px solid var(--line);
           padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
@@ -804,7 +821,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   a.link { color: var(--moss); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
   /* Map controls */
-  .toolbar { position: absolute; z-index: 1000; top: calc(10px + env(safe-area-inset-top, 0px)); left: 64px; right: max(10px, env(safe-area-inset-right, 0px));
+  .toolbar { position: absolute; z-index: 1000; top: calc(10px + env(safe-area-inset-top, 0px)); left: calc(64px + env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px));
              display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
   .toolbar > * { pointer-events: auto; }
   .searchbox { display: flex; max-width: 420px; background: var(--card); border-radius: 0; box-shadow: var(--shadow); }

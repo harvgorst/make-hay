@@ -11,6 +11,10 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 1.3.0
+
+- Launch screen: Make Hay's mark on moss green (dark green in dark mode) while the app starts, held until the map has drawn. On iPhone, re-add the icon to the home screen once to get it.
+
 ## Version 1.2.0
 
 - Difficulty guides: a one-line description of each rating under the rates in Settings, on each patch card, and in a **Guide** list you can pick from while editing a patch.

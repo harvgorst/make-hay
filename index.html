@@ -908,7 +908,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .totalbar .tsub { font: 12px/1.3 var(--mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.3em; }
   .totalbar button:disabled { opacity: .45; cursor: default; }
   .totalbar button { border-radius: 0; padding: 8px 18px; min-height: 46px; align-self: stretch; }
-  .toast { position: fixed; z-index: 1200; right: 16px; width: 368px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 3; display: flex; align-items: center; gap: 12px; background: #263022; color: #F3F6EC;
+  .toast { position: fixed; z-index: 1200; right: 16px; width: 368px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); display: flex; align-items: center; gap: 12px; background: #263022; color: #F3F6EC;
            border-radius: 0; padding: 6px 6px 6px 16px; box-shadow: var(--shadow); }
   .toast span { flex: 1; min-width: 0; }
   .toast button { background: none; border: 0; color: #CFE3B5; font-weight: 600; }
@@ -977,7 +977,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <span id="pbnums" class="pbnums grow"></span>
       <button id="pbdone" class="primary">Done</button>
     </div>
-    <p class="muted">Drag the corners to reshape. Drag a midpoint to add a corner.</p>
+    <p class="muted">Drag corners to reshape. Double-tap a corner to remove it. Drag a midpoint to add one.</p>
   </div>
   <div class="sheethandle" id="sheethandle">
     <div class="bar"></div>
@@ -1301,9 +1301,20 @@ function addLayer(p) {
   layer.bindTooltip('', { permanent: true, direction: 'center', className: 'lbl' });
   // while drawing, let taps on an existing patch through so a corner can go on a neighbouring patch's edge
   layer.on('click', e => { if (drawing) return; L.DomEvent.stopPropagation(e); select(p.id); revealPatch(p.id); });
-  const sync = () => {
+  let stable = p.latlngs;   // the shape before the latest corner removal, for Undo
+  const sync = e => {
     p.latlngs = layer.getLatLngs()[0].map(l => [l.lat, l.lng]);
     save(); render();
+    if (e && e.type === 'pm:vertexremoved') {
+      const before = stable;
+      toast('Corner removed', () => {
+        if (!layers[p.id]) return;
+        p.latlngs = before; layer.setLatLngs(before); stable = before;
+        if (selected === p.id) { layer.pm.disable(); layer.pm.enable(editOptions()); }
+        save(); render();
+      });
+    }
+    if (e && (e.type === 'pm:vertexremoved' || e.type === 'pm:markerdragend' || e.type === 'pm:vertexadded')) stable = p.latlngs;
   };
   layer.on('pm:edit pm:markerdrag pm:markerdragend pm:vertexadded pm:vertexremoved', sync);
   layers[p.id] = layer;
@@ -1311,13 +1322,24 @@ function addLayer(p) {
 function clearLayers() {
   for (const k in layers) { layers[k].pm.disable(); layers[k].remove(); delete layers[k]; }
 }
+// Corners: drag to move; double-tap to remove (long-press does nothing, so holding to drag can't delete)
+const editOptions = () => ({
+  snappable: true, snapDistance: SNAP, allowSelfIntersection: false, removeVertexOn: 'dblclick',
+  removeVertexValidation: ({ layer }) => {
+    if (layer.getLatLngs()[0].length > 3) return true;
+    flash('A patch needs at least 3 corners. Delete the patch instead.');
+    return false;
+  },
+});
 const isPhone = () => matchMedia('(max-width: 800px)').matches;
 function select(id) {
   selected = id;
   document.body.classList.toggle('editing', id != null && isPhone());
   for (const [pid, layer] of Object.entries(layers)) {
-    if (+pid === id) layer.pm.enable({ snappable: true, snapDistance: SNAP, allowSelfIntersection: false }); else layer.pm.disable();
+    if (+pid === id) layer.pm.enable(editOptions()); else layer.pm.disable();
   }
+  // a double-tap near a corner should remove the corner, not zoom the map
+  if (id != null) map.doubleClickZoom.disable(); else if (!drawing) map.doubleClickZoom.enable();
   render();
   if (typeof applySheet === 'function') applySheet(true);
 }
@@ -1425,7 +1447,7 @@ function render() {
         <button class="iconbtn" title="Delete patch" aria-label="Delete ${esc(p.name)}">✕</button>
       </div>
       <div class="nums"><span>${fmtArea(a)} <span class="muted">${acres(a)}</span></span><span class="price">${money(price)}</span></div>
-      ${p.id === selected ? '<div class="muted">Drag the corners on the map to reshape. Drag a small midpoint to add a corner. Long-press a corner to remove it.</div>' : ''}`;
+      ${p.id === selected ? '<div class="muted">Drag corners on the map to reshape. Double-tap a corner to remove it. Drag a small midpoint to add one.</div>' : ''}`;
     el.onclick = ev => {
       if (ev.target.closest('input,select,button') || selected === p.id) return;
       if (isPhone() && sheetOpen) setSheet(false, false);

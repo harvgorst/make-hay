@@ -7,7 +7,8 @@ A phone-first web app for pricing scything work: draw patches on a satellite map
 - **Before changing anything, give a short heads-up** of what you're about to change and how, then wait for a go-ahead or additions. A one-line fix gets a one-line heads-up; bigger features get a few bullets. Plain questions get answers, not changes.
 - **Push every finished change to `main` without asking**, once it has been tested. No pull requests unless asked.
 - Commit as `Claude <noreply@anthropic.com>` so GitHub shows commits as verified.
-- Bump the cache name in `sw.js` (`scythe-pricer-vN`) whenever app files change, so installed copies update.
+- **Versions**: every published change bumps the version in three places together: `APP_VERSION` in `index.html`, `version.json`, and the cache name in `sw.js` (`make-hay-X.Y.Z`). Installed apps compare `version.json` with their own `APP_VERSION` and offer an Update bar. Use patch numbers for fixes (1.0.1), minor for features (1.1.0). Note notable changes in the README and tag releases (`git tag vX.Y.Z`).
+- iPhones read the status-bar and home-screen settings only when the icon is added; changes to those need the icon re-adding. Everything else arrives through the Update bar.
 
 ## Rules for the app
 

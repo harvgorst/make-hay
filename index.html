@@ -745,6 +745,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .seg { display: flex; border: 1px solid var(--edge); }
   .seg label { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 42px; cursor: pointer; border-right: 1px solid var(--edge); font-size: 14px; }
   .seg label:last-child { border-right: 0; }
+  .updatebar { position: absolute; z-index: 1150; left: 50%; transform: translateX(-50%); top: calc(64px + env(safe-area-inset-top, 0px));
+               width: min(420px, calc(100% - 20px)); display: flex; align-items: center; gap: 10px; background: var(--moss); color: var(--moss-ink);
+               padding: 4px 4px 4px 14px; box-shadow: var(--shadow); font-weight: 500; }
+  .updatebar span { flex: 1; min-width: 0; }
+  .updatebar button { border: 1px solid var(--moss-ink); color: var(--moss-ink); font-weight: 700; text-align: center; }
+  body.editing .updatebar, body.drawing .updatebar { display: none !important; }
   .diag { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; background: var(--card); padding: 10px 14px; font: 13px/1.4 var(--mono); }
   .diag span:nth-child(odd) { color: var(--muted); }
   #saprobe { position: fixed; top: 0; left: 0; width: 1px; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); visibility: hidden; pointer-events: none; }
@@ -967,6 +973,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </div>
   </div>
   <div id="hint" hidden></div>
+  <div id="updatebar" class="updatebar" hidden role="status"><span>A new version of Make Hay is ready</span><button id="updatenow">Update</button></div>
 </div>
 
 <aside id="panel">
@@ -1635,7 +1642,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '2026-11-22c';
+const APP_VERSION = '1.0.0';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');
@@ -1868,6 +1875,24 @@ save(false);
 // Ask the browser not to clear this site's saved data when space is short or the site hasn't been opened for a while
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+// Check for a newer version whenever the app is opened or brought back, skipping every saved copy
+let newVersion = null;
+async function checkForUpdate() {
+  if (location.protocol !== 'https:' || newVersion) return;
+  try {
+    const r = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+    const v = (await r.json()).version;
+    if (v && v !== APP_VERSION) { newVersion = v; $('updatebar').hidden = false; }
+  } catch (e) {}   // no signal: try again next time
+}
+$('updatenow').onclick = async () => {
+  $('updatenow').textContent = 'Updating…';
+  try { const reg = await navigator.serviceWorker.getRegistration(); if (reg) await reg.update(); } catch (e) {}
+  location.reload();
+};
+checkForUpdate();
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkForUpdate(); });
+addEventListener('pageshow', e => { if (e.persisted) checkForUpdate(); });
 </script>
 </body>
 </html>

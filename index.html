@@ -746,7 +746,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
                    padding: 6px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
     .sheethandle .bar { width: 40px; height: 4px; background: var(--edge); margin: 0 auto 4px; }
     .sheethandle .sum { display: flex; align-items: center; gap: 10px; min-height: 34px; padding-right: 44px; }
-    .sheethandle .stripset { flex: none; min-height: 34px; padding: 2px 10px; font-size: 13px; border-color: var(--line); white-space: nowrap; }
     #panel:not(.collapsed) .sheethandle .sum { display: none; }
     @media (max-width: 360px) { #sumcount { display: none; } }
     #panel:not(.collapsed) .sheethandle { min-height: 44px; border-bottom: 1px solid var(--line); }
@@ -967,7 +966,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <div class="sum">
       <span class="sumtext sumname" id="sumname"></span>
       <span class="sumtext muted" id="sumcount"></span>
-      <button class="stripset" id="stripsettings">⚙ Settings</button>
     </div>
     <button class="chev" id="sheettoggle" aria-label="Open job details" aria-expanded="false">▴</button>
   </div>
@@ -1591,7 +1589,6 @@ function showView(name) {
 const showJobs = open => showView(open ? 'jobsview' : 'jobview');
 $('opensettings').onclick = () => showView('settingsview');
 $('tabjob').onclick = () => showView('jobview');
-$('stripsettings').onclick = () => showView('settingsview');
 let armedDelete = null;
 function renderJobs() {
   const list = store.jobs.filter(j => !isEmpty(j) || j === job).sort((a, b) => b.updated - a.updated);
@@ -1693,7 +1690,7 @@ function applySheet(animate = false) {
 (() => {
   const hd = $('sheethandle'); let startY = null, startH = 0, moved = false;
   hd.addEventListener('pointerdown', e => {
-    if (!phone.matches || e.target.closest('#stripsettings')) return;
+    if (!phone.matches) return;
     startY = e.clientY; startH = $('panel').offsetHeight; moved = false;
     $('panel').classList.remove('anim'); hd.setPointerCapture(e.pointerId);
   });

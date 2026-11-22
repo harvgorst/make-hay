@@ -745,6 +745,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .seg { display: flex; border: 1px solid var(--edge); }
   .seg label { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 42px; cursor: pointer; border-right: 1px solid var(--edge); font-size: 14px; }
   .seg label:last-child { border-right: 0; }
+  .diag { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; background: var(--card); padding: 10px 14px; font: 13px/1.4 var(--mono); }
+  .diag span:nth-child(odd) { color: var(--muted); }
+  #saprobe { position: fixed; top: 0; left: 0; width: 1px; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); visibility: hidden; pointer-events: none; }
   #travelfields.off { opacity: .5; }
   .seg input { position: absolute; opacity: 0; pointer-events: none; }
   .seg label:has(input:checked) { background: var(--moss); color: var(--moss-ink); font-weight: 600; }
@@ -1009,7 +1012,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <p class="muted note">Used for areas, rates and quotes. Prices don't change when you switch.</p>
     </section>
     <div class="jumps" aria-label="Jump to">
-      <a href="#set-rates">Rates</a><a href="#set-travel">Travel</a><a href="#set-home">Home</a><a href="#set-quote">Quote</a><a href="#set-feedback">Feedback</a>
+      <a href="#set-rates">Rates</a><a href="#set-travel">Travel</a><a href="#set-home">Home</a><a href="#set-quote">Quote</a><a href="#set-feedback">Feedback</a><a href="#set-display">Display</a>
     </div>
     <section id="set-rates">
       <h2 id="rateshead">Rates by difficulty, per acre</h2>
@@ -1069,6 +1072,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <button class="primary" id="fbsend" style="text-align:center">Write email</button>
         <p class="muted" id="fbnote">Opens your email app with the message ready to send to <span class="sel" id="fbaddr"></span>. If nothing opens, <a class="link" id="fbcopy" role="button" tabindex="0">copy the message</a> and email it yourself.</p>
       </form>
+    </section>
+    <section id="set-display">
+      <h2>Display check</h2>
+      <div class="diag" id="diag"></div>
+      <p class="muted note">If the app doesn't fill the screen on your phone, send a screenshot of this.</p>
     </section>
   </div>
 
@@ -1627,6 +1635,25 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
+const APP_VERSION = '2026-11-22c';
+// Display check: what the phone is actually giving the app
+function renderDiag() {
+  let probe = $('saprobe');
+  if (!probe) { probe = document.createElement('div'); probe.id = 'saprobe'; document.body.appendChild(probe); }
+  const cs = getComputedStyle(probe);
+  const mode = navigator.standalone ? 'home screen (iOS)' : matchMedia('(display-mode: fullscreen)').matches ? 'full screen' : matchMedia('(display-mode: standalone)').matches ? 'home screen' : 'browser tab';
+  const ios = (navigator.userAgent.match(/OS (\d+)_(\d+)/) || []).slice(1).join('.') || 'n/a';
+  const rows = [
+    ['Opened as', mode],
+    ['Space at top', Math.round(parseFloat(cs.paddingTop)) + 'px'],
+    ['Space at bottom', Math.round(parseFloat(cs.paddingBottom)) + 'px'],
+    ['Screen', screen.width + '×' + screen.height + ', window ' + innerWidth + '×' + innerHeight],
+    ['iOS', ios],
+    ['Status bar', document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]').content],
+    ['Version', APP_VERSION],
+  ];
+  $('diag').innerHTML = rows.map(([k, v]) => `<span>${k}</span><span>${esc(v)}</span>`).join('');
+}
 $('fbaddr').textContent = FEEDBACK_TO;
 if (!FEEDBACK_TO) $('fbsend').textContent = 'Copy feedback';
 if (!FEEDBACK_TO) $('fbnote').textContent = 'The feedback address isn\'t set up yet, so this copies your message. Paste it into a text or email.';
@@ -1665,7 +1692,7 @@ function showView(name) {
   $('sheetbody').scrollTop = 0;
   if (name !== 'jobview') setSheet(true);
   if (name === 'jobsview') renderJobs();
-  if (name === 'settingsview') renderRestore();
+  if (name === 'settingsview') { renderRestore(); renderDiag(); }
 }
 const showJobs = open => showView(open ? 'jobsview' : 'jobview');
 $('opensettings').onclick = () => showView('settingsview');

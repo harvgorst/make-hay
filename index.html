@@ -708,14 +708,30 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
-  body { font: 16px/1.45 var(--body); background: var(--ground); color: var(--ink);
+  body { font: 15px/1.45 var(--body); background: var(--ground); color: var(--ink);
          display: grid; grid-template-columns: 1fr 400px; height: 100dvh; overflow: hidden; }
   #mapwrap { position: relative; min-height: 0; }
   #map { position: absolute; inset: 0; background: var(--ground); }
   #panel { position: relative; z-index: 500; background: var(--paper); display: flex; flex-direction: column; min-height: 0;
            overflow: hidden; box-shadow: -1px 0 0 var(--line); }
   .sheetbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; }
-  .sheetbody > div { padding: 18px max(16px, env(safe-area-inset-right, 0px)) 20px max(16px, env(safe-area-inset-left, 0px)); }
+  .sheetbody > div { padding: 14px max(16px, env(safe-area-inset-right, 0px)) 18px max(16px, env(safe-area-inset-left, 0px)); }
+  .tabs { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: 1fr 1.3fr 1fr; background: var(--paper); border-bottom: 1px solid var(--line);
+          padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+  .tabs button { border: 0; border-bottom: 3px solid transparent; background: none; text-align: center; padding: 6px 4px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+  .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--moss); font-weight: 600; }
+  .jumps { display: flex; flex-wrap: wrap; gap: 6px; }
+  .jumps a { color: var(--ink); text-decoration: none; background: var(--field); border-bottom: 1px solid var(--edge); padding: 6px 10px; font-size: 14px; min-height: 36px; display: inline-flex; align-items: center; }
+  #settingsview section { scroll-margin-top: 56px; }
+  .fb { display: grid; gap: 10px; }
+  .fb textarea { width: 100%; font: 16px/1.4 var(--body); border: 0; border-bottom: 1px solid var(--edge); background: var(--field); padding: 10px 12px; border-radius: 0; resize: vertical; color: var(--ink); }
+  .seg { display: flex; border: 1px solid var(--edge); }
+  .seg label { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 42px; cursor: pointer; border-right: 1px solid var(--edge); font-size: 14px; }
+  .seg label:last-child { border-right: 0; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg label:has(input:checked) { background: var(--moss); color: var(--moss-ink); font-weight: 600; }
+  .seg label:has(input:focus-visible) { outline: 2px solid var(--moss); outline-offset: -4px; }
+  .sel { user-select: all; -webkit-user-select: all; font-weight: 600; color: var(--ink); }
   .sheethandle { display: none; }
   /* Phones: the map fills the screen and the job sits in a sheet that is either a slim strip (map gets ~80%) or opened up */
   @media (max-width: 800px) {
@@ -729,24 +745,26 @@ svg.leaflet-image-layer.leaflet-interactive path {
     .sheethandle { display: block; flex: none; position: relative; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
                    padding: 6px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
     .sheethandle .bar { width: 40px; height: 4px; background: var(--edge); margin: 0 auto 4px; }
-    .sheethandle .sum { display: flex; align-items: center; gap: 10px; min-height: 36px; padding-right: 44px; }
+    .sheethandle .sum { display: flex; align-items: center; gap: 10px; min-height: 34px; padding-right: 44px; }
+    .sheethandle .stripset { flex: none; min-height: 34px; padding: 2px 10px; font-size: 13px; border-color: var(--line); white-space: nowrap; }
     #panel:not(.collapsed) .sheethandle .sum { display: none; }
+    @media (max-width: 360px) { #sumcount { display: none; } }
     #panel:not(.collapsed) .sheethandle { min-height: 44px; border-bottom: 1px solid var(--line); }
     .sheethandle .sumname { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sheethandle .chev { position: absolute; top: 2px; right: max(8px, env(safe-area-inset-right, 0px)); width: 44px; min-height: 40px; border: 0; padding: 0; text-align: center; font-size: 18px; color: var(--muted); background: none; }
     #panel.collapsed .totalbar { border-top: 0; padding-top: 4px; }
   }
   @media (max-width: 800px) and (prefers-reduced-motion: reduce) { #panel.anim { transition: none; } }
-  #jobview, #jobsview, #settingsview { display: flex; flex-direction: column; gap: 22px; min-width: 0; flex: 1 0 auto; }
+  #jobview, #jobsview, #settingsview { display: flex; flex-direction: column; gap: 18px; min-width: 0; flex: 1 0 auto; }
   #panel [hidden] { display: none !important; }
   [hidden] { display: none !important; }
 
-  h1 { font: 600 20px/1.25 var(--display); margin: 0; }
-  h2 { font: 600 14px/1.3 var(--body); color: var(--muted); margin: 0 0 10px; letter-spacing: .01em; }
+  h1 { font: 600 18px/1.25 var(--display); margin: 0; }
+  h2 { font: 600 13px/1.3 var(--body); color: var(--muted); margin: 0 0 8px; letter-spacing: .01em; }
   p { margin: 0; }
-  .muted { color: var(--muted); font-size: 14px; }
+  .muted { color: var(--muted); font-size: 13px; }
   button, input, select, textarea { font: inherit; color: inherit; }
-  button { cursor: pointer; min-height: 44px; border: 1px solid var(--edge); background: transparent; border-radius: 0; padding: 8px 16px; text-align: left; }
+  button { cursor: pointer; min-height: 44px; border: 1px solid var(--edge); background: transparent; border-radius: 0; padding: 6px 14px; text-align: left; }
   button.primary { background: var(--moss); color: var(--moss-ink); border-color: var(--moss); font-weight: 600; }
   button:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 7%, transparent); }
   button.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--moss) 88%, #000); }
@@ -766,7 +784,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .searchbox button { border: 0; border-left: 1px solid var(--line); background: none; border-radius: 0; color: var(--moss); font-weight: 600; text-align: center; }
   .toolrow { display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
   .toolrow > * { pointer-events: auto; }
-  .chip { border-radius: 0; border: 0; box-shadow: var(--shadow); padding: 8px 16px; background: var(--card); }
+  .chip { border-radius: 0; border: 0; box-shadow: var(--shadow); padding: 6px 14px; background: var(--card); }
   .chip.primary { font-weight: 600; }
   .chip.primary { background: var(--moss); color: var(--moss-ink); }
   .leaflet-touch .leaflet-bar, .leaflet-bar { border: 0 !important; border-radius: 0; box-shadow: var(--shadow); overflow: hidden; }
@@ -779,9 +797,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .leaflet-control-attribution { font-size: 10px; max-width: calc(100vw - 80px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                                  background: rgb(248 249 243 / .75) !important; border-radius: 0; cursor: pointer; }
   .leaflet-control-attribution.open { white-space: normal; }
-  .lbl { background: rgb(20 26 18 / .78); color: #fff; border: 0; border-radius: 0; box-shadow: none; padding: 3px 8px;
-         font: 600 12px/1.3 var(--body); text-align: left; }
-  .lbl small { font-weight: 400; font-size: 11px; opacity: .9; }
+  .lbl { background: rgb(20 26 18 / .78); color: #fff; border: 0; border-radius: 0; box-shadow: none; padding: 2px 7px;
+         font: 600 11px/1.3 var(--body); text-align: left; }
+  .lbl small { font-weight: 400; font-size: 10.5px; opacity: .9; }
   .lbl::before { display: none; }
   .marker-icon { width: 20px !important; height: 20px !important; margin: -10px 0 0 -10px !important; border: 3px solid #4A6B38 !important; background: #fff !important; border-radius: 0 !important; }
   .marker-icon-middle { width: 12px !important; height: 12px !important; margin: -6px 0 0 -6px !important; border-width: 2px !important; opacity: .85; }
@@ -800,7 +818,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
   /* Job panel */
   .jobhead { display: flex; gap: 8px; align-items: center; }
-  .jobtitle { flex: 1; min-width: 0; font: 600 20px/1.25 var(--display); border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; padding: 6px 0; }
+  .jobtitle { flex: 1; min-width: 0; font: 600 18px/1.25 var(--display); border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; padding: 6px 0; }
   .jobtitle:hover, .jobtitle:focus { border-bottom-color: var(--edge); outline: none; }
   .jobtitle::placeholder { color: var(--muted); }
   .headbtns { display: flex; gap: 6px; flex: none; }
@@ -813,14 +831,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .patch .pname { flex: 1; min-width: 0; font-weight: 600; border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; padding: 6px 0; }
   .patch .pname:hover, .patch .pname:focus { border-bottom-color: var(--edge); outline: none; }
   .patch select { flex: none; border-radius: 0; background-color: var(--field); box-shadow: inset 4px 0 0 var(--c); padding-left: 14px; padding-right: 8px; font-weight: 500; }
-  .patch .nums { display: flex; justify-content: space-between; align-items: baseline; padding-right: 10px; font-family: var(--mono); font-size: 15px; }
-  .patch .price { font-weight: 600; font-size: 16px; }
+  .patch .nums { display: flex; justify-content: space-between; align-items: baseline; padding-right: 10px; font-family: var(--mono); font-size: 14px; }
+  .patch .price { font-weight: 600; font-size: 15px; }
   .iconbtn { width: 44px; padding: 0; border: 0; background: none; color: var(--muted); font-size: 20px; flex: none; text-align: center; }
   .iconbtn:hover { color: var(--danger); }
   .empty { background: var(--card); border-radius: 0; padding: 16px; color: var(--muted); }
   .totals { display: grid; grid-template-columns: 1fr auto; gap: 0; border-top: 1px solid var(--line); }
-  .totals > span { padding: 8px 0; border-bottom: 1px solid var(--line); }
-  .totals .r { text-align: right; font-family: var(--mono); font-size: 15px; }
+  .totals > span { padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .totals .r { text-align: right; font-family: var(--mono); font-size: 14px; }
   .travelnote { margin-top: 8px; }
   .field { display: grid; grid-template-columns: 1fr 130px; gap: 10px; align-items: center; margin-top: 10px; }
   .money { display: flex; align-items: center; border: 0; border-bottom: 1px solid var(--edge); border-radius: 0; background: var(--field); min-height: 44px; padding-left: 12px; font-family: var(--mono); }
@@ -832,7 +850,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   /* Total pinned to the bottom of the panel */
   .totalbar { flex: none; z-index: 2; display: flex; align-items: center; gap: 14px;
               background: var(--paper); border-top: 1px solid var(--line);
-              padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+              padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
   .totalbar .tbox { flex: 1; min-width: 0; display: grid; }
   .totalbar .trow { display: flex; align-items: center; gap: 12px; }
   .mix { display: flex; flex-direction: column; gap: 2px; width: 46px; flex: none; }
@@ -840,10 +858,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .mix i b { display: block; height: 100%; background: var(--c); }
   .jobcard .mix { width: 34px; gap: 1px; }
   .jobcard .mix i { height: 4px; }
-  .totalbar .tlabel { font-size: 14px; color: var(--muted); }
-  .totalbar .tbig { font: 600 28px/1.1 var(--mono); letter-spacing: -.02em; }
-  .totalbar .tsub { font: 13px/1.3 var(--mono); color: var(--muted); }
-  .totalbar button { border-radius: 0; padding: 10px 22px; min-height: 52px; align-self: stretch; }
+  .totalbar .tlabel { font-size: 13px; color: var(--muted); }
+  .totalbar .tbig { font: 600 24px/1.1 var(--mono); letter-spacing: -.02em; }
+  .totalbar .tsub { font: 12px/1.3 var(--mono); color: var(--muted); }
+  .totalbar button { border-radius: 0; padding: 8px 18px; min-height: 46px; align-self: stretch; }
   .toast { position: absolute; left: 16px; right: 16px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 3; display: flex; align-items: center; gap: 12px; background: #263022; color: #F3F6EC;
            border-radius: 0; padding: 6px 6px 6px 16px; box-shadow: var(--shadow); }
   .toast span { flex: 1; min-width: 0; }
@@ -907,37 +925,48 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <div class="sum">
       <span class="sumtext sumname" id="sumname"></span>
       <span class="sumtext muted" id="sumcount"></span>
+      <button class="stripset" id="stripsettings">⚙ Settings</button>
     </div>
     <button class="chev" id="sheettoggle" aria-label="Open job details" aria-expanded="false">▴</button>
   </div>
   <div class="sheetbody" id="sheetbody">
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button id="tabjob" role="tab" aria-selected="true">Job</button>
+    <button id="openjobs" role="tab" aria-selected="false">Saved jobs<span id="jobcount"></span></button>
+    <button id="opensettings" role="tab" aria-selected="false">Settings</button>
+  </nav>
   <div id="jobsview" hidden>
-    <div class="row">
-      <h1 class="grow">Saved jobs</h1>
-      <button id="closejobs" aria-label="Back to current job">Back</button>
-    </div>
     <button id="newjob" class="primary" style="text-align:center">＋ New job</button>
     <div id="joblist"></div>
   </div>
 
   <div id="settingsview" hidden>
-    <div class="row">
-      <h1 class="grow">Settings</h1>
-      <button id="closesettings" class="primary" aria-label="Back to current job">Done</button>
+    <div class="jumps" aria-label="Jump to">
+      <a href="#set-rates">Rates</a><a href="#set-travel">Travel</a><a href="#set-home">Home</a><a href="#set-quote">Quote</a><a href="#set-feedback">Feedback</a>
     </div>
-    <section>
+    <section id="set-rates">
       <h2>Rates by difficulty, per m²</h2>
       <div class="group" id="rates"></div>
-      <div class="group" style="margin-top:10px">
+      <div class="group" style="margin-top:8px">
         <div class="field"><label for="minimum">Minimum charge</label><span class="money"><span>£</span><input id="minimum" type="number" min="0" step="1" inputmode="decimal"></span></div>
       </div>
       <p class="muted note">These apply to every job. They only change when you edit them here.</p>
+      <div class="row" style="margin-top:8px"><button id="defaultrates" class="grow"></button></div>
       <div id="restore" class="restore" hidden>
         <div class="row"><strong class="grow">Earlier rates found on this device</strong><button id="restorehide" class="iconbtn" style="width:auto;padding:0 8px" aria-label="Hide earlier rates">Hide</button></div>
         <div id="restorelist"></div>
       </div>
     </section>
-    <section>
+    <section id="set-travel">
+      <h2>Travel</h2>
+      <div class="group">
+        <div class="field"><label for="permile">Rate per mile</label><span class="money"><span>£</span><input id="permile" type="number" min="0" step="0.01" inputmode="decimal"></span></div>
+        <div class="field"><label for="freemiles">Free within (miles)</label><span class="money"><span></span><input id="freemiles" type="number" min="0" step="1" inputmode="decimal"></span></div>
+      </div>
+      <label class="switch" for="returntrip" style="margin-top:6px"><input id="returntrip" type="checkbox"> Count the return journey</label>
+      <p class="muted note">Driving distance from home to the middle of the job. Miles beyond the free distance are charged, each way when the return journey is counted.</p>
+    </section>
+    <section id="set-home">
       <h2>Home or base</h2>
       <p id="homelabel" class="homelabel"></p>
       <form id="homesearch" class="row">
@@ -946,29 +975,31 @@ svg.leaflet-image-layer.leaflet-interactive path {
       </form>
       <div class="row" style="margin-top:8px"><button id="homecentre" class="grow">Use map centre as home</button></div>
     </section>
-    <section>
-      <h2>Travel</h2>
-      <div class="group">
-        <div class="field"><label for="permile">Rate per mile</label><span class="money"><span>£</span><input id="permile" type="number" min="0" step="0.01" inputmode="decimal"></span></div>
-        <div class="field"><label for="freemiles">Free within (miles)</label><span class="money"><span></span><input id="freemiles" type="number" min="0" step="1" inputmode="decimal"></span></div>
-      </div>
-      <label class="switch" for="returntrip" style="margin-top:8px"><input id="returntrip" type="checkbox"> Count the return journey</label>
-      <p class="muted note">Driving distance from home to the middle of the job. Miles beyond the free distance are charged, each way when the return journey is counted.</p>
-    </section>
-    <section>
+    <section id="set-quote">
       <h2>Quote</h2>
       <label class="switch" for="round10"><input id="round10" type="checkbox"> Round the total to the nearest £10</label>
       <p class="muted note">Only the final total is rounded. Patch prices and travel stay exact.</p>
+    </section>
+    <section id="set-feedback">
+      <h2>Send feedback</h2>
+      <form id="feedback" class="fb">
+        <div class="seg" role="radiogroup" aria-label="Feedback type">
+          <label><input type="radio" name="fbtype" value="Bug" checked> Bug</label>
+          <label><input type="radio" name="fbtype" value="Idea"> Idea</label>
+          <label><input type="radio" name="fbtype" value="Other"> Other</label>
+        </div>
+        <label for="fbmsg" class="muted">What happened, or what would help?</label>
+        <textarea id="fbmsg" rows="4" placeholder="e.g. Finish didn't work after undoing a corner"></textarea>
+        <label class="switch" for="fbjob"><input id="fbjob" type="checkbox"> Include this job's patches and settings (no names)</label>
+        <button class="primary" id="fbsend" style="text-align:center">Write email</button>
+        <p class="muted" id="fbnote">Opens your email app with the message ready to send to <span class="sel" id="fbaddr"></span>. If nothing opens, <a class="link" id="fbcopy" role="button" tabindex="0">copy the message</a> and email it yourself.</p>
+      </form>
     </section>
   </div>
 
   <div id="jobview">
     <header class="jobhead">
       <input id="jobname" class="jobtitle" placeholder="Name this job" aria-label="Job name">
-      <div class="headbtns">
-        <button id="openjobs">Jobs<span id="jobcount"></span></button>
-        <button id="opensettings" aria-label="Settings" title="Settings">⚙</button>
-      </div>
     </header>
 
     <section>
@@ -1007,10 +1038,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
 </script>
 <script>
 const DIFFS = [
-  { key: 'easy',   name: 'Easy',      color: '#7FB069', rate: 0.20 },
-  { key: 'medium', name: 'Medium',    color: '#E2B93B', rate: 0.35 },
-  { key: 'hard',   name: 'Hard',      color: '#D9783A', rate: 0.55 },
-  { key: 'vhard',  name: 'Very hard', color: '#B5403A', rate: 0.80 },
+  { key: 'easy',   name: 'Easy',      color: '#7FB069', rate: 0.36 },
+  { key: 'medium', name: 'Medium',    color: '#E2B93B', rate: 0.38 },
+  { key: 'hard',   name: 'Hard',      color: '#D9783A', rate: 0.42 },
+  { key: 'vhard',  name: 'Very hard', color: '#B5403A', rate: 0.44 },
 ];
 const D = Object.fromEntries(DIFFS.map(d => [d.key, d]));
 const KEY = 'scythe-pricer-v2', OLD_KEY = 'scythe-pricer-v1';
@@ -1397,10 +1428,64 @@ function renderRestore() {
 }
 $('restorehide').onclick = () => { store.restoreDismissed = true; save(false); renderRestore(); };
 
+// Put the standard rates back, after a second tap to confirm
+const defaultsLabel = () => 'Use standard rates (' + DIFFS.map(d => '£' + d.rate.toFixed(2)).join(', ') + ')';
+let armedDefaults = null;
+$('defaultrates').textContent = defaultsLabel();
+$('defaultrates').onclick = () => {
+  if (!armedDefaults) {
+    $('defaultrates').textContent = 'Tap again to replace your rates';
+    armedDefaults = setTimeout(() => { armedDefaults = null; $('defaultrates').textContent = defaultsLabel(); }, 3000);
+    return;
+  }
+  clearTimeout(armedDefaults); armedDefaults = null;
+  store.rates = { ...FACTORY }; save(false); fillInputs(); render(); renderRestore();
+  $('defaultrates').textContent = 'Standard rates in use';
+  setTimeout(() => $('defaultrates').textContent = defaultsLabel(), 2000);
+};
+// Jump links inside Settings scroll the panel rather than the page
+document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
+  e.preventDefault(); document.querySelector(a.getAttribute('href')).scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+});
+
+// ---------- Feedback ----------
+// The address feedback emails go to. Put it between the quotes.
+const FEEDBACK_TO = '';
+$('fbaddr').textContent = FEEDBACK_TO;
+if (!FEEDBACK_TO) $('fbsend').textContent = 'Copy feedback';
+if (!FEEDBACK_TO) $('fbnote').innerHTML = 'The feedback address hasn\'t been set up yet. <a class="link" id="fbcopy" role="button" tabindex="0">Copy the message</a> and send it by text or email instead.';
+function feedbackText() {
+  const type = document.querySelector('input[name=fbtype]:checked').value;
+  const lines = [$('fbmsg').value.trim() || '(no message)', '', '---', 'Type: ' + type, 'Device: ' + navigator.userAgent];
+  if ($('fbjob').checked) {
+    const t = jobTotals(job);
+    lines.push('', 'Job: ' + job.patches.length + ' patches, ' + fmtArea(t.area) + ', total ' + money(t.total));
+    for (const p of job.patches) lines.push('- ' + D[p.diff].name + ', ' + fmtArea(ringArea(p.latlngs)) + ', ' + p.latlngs.length + ' corners');
+    lines.push('Rates: ' + DIFFS.map(d => d.name + ' ' + fix2(store.rates[d.key])).join(', ') + '; minimum ' + (store.minimum || 0));
+    lines.push('Travel: ' + fix2(store.travel.perMile) + '/mile, ' + store.travel.freeMiles + ' free, return ' + (store.travel.returnTrip ? 'yes' : 'no') + ', home ' + (store.home ? 'set' : 'not set') + '; rounding ' + (store.round10 ? 'on' : 'off'));
+  }
+  return { type, body: lines.join('\n') };
+}
+async function copyFeedback() {
+  const f = feedbackText(), text = (FEEDBACK_TO ? 'To: ' + FEEDBACK_TO + '\n' : '') + 'Subject: Make Hay feedback: ' + f.type + '\n\n' + f.body;
+  const link = $('fbcopy');
+  try { await navigator.clipboard.writeText(text); link.textContent = 'Copied'; }
+  catch (err) { $('fbmsg').value = text; $('fbmsg').select(); link.textContent = 'Select the text above'; }
+  setTimeout(() => link.textContent = FEEDBACK_TO ? 'copy the message' : 'Copy the message', 2500);
+}
+$('feedback').onsubmit = e => {
+  e.preventDefault();
+  if (!FEEDBACK_TO) return copyFeedback();
+  const f = feedbackText();
+  location.href = 'mailto:' + FEEDBACK_TO + '?subject=' + encodeURIComponent('Make Hay feedback: ' + f.type) + '&body=' + encodeURIComponent(f.body);
+};
+$('fbcopy').onclick = $('fbcopy').onkeydown = ev => { if (ev.type === 'keydown' && ev.key !== 'Enter') return; copyFeedback(); };
+
 // ---------- Saved jobs ----------
 function showView(name) {
   for (const v of ['jobview', 'jobsview', 'settingsview']) $(v).hidden = v !== name;
   $('totalbar').hidden = name !== 'jobview';
+  for (const [tab, v] of [['tabjob', 'jobview'], ['openjobs', 'jobsview'], ['opensettings', 'settingsview']]) $(tab).setAttribute('aria-selected', v === name);
   $('sheetbody').scrollTop = 0;
   if (name !== 'jobview') setSheet(true);
   if (name === 'jobsview') renderJobs();
@@ -1408,7 +1493,8 @@ function showView(name) {
 }
 const showJobs = open => showView(open ? 'jobsview' : 'jobview');
 $('opensettings').onclick = () => showView('settingsview');
-$('closesettings').onclick = () => showView('jobview');
+$('tabjob').onclick = () => showView('jobview');
+$('stripsettings').onclick = () => showView('settingsview');
 let armedDelete = null;
 function renderJobs() {
   const list = store.jobs.filter(j => !isEmpty(j) || j === job).sort((a, b) => b.updated - a.updated);
@@ -1437,7 +1523,6 @@ function renderJobs() {
   }
 }
 $('openjobs').onclick = () => showJobs(true);
-$('closejobs').onclick = () => showJobs(false);
 $('newjob').onclick = () => {
   if (isEmpty(job)) { showJobs(false); $('jobname').focus(); return; }
   const j = makeJob(); store.jobs.push(j); loadJob(j, false); showJobs(false); $('jobname').focus();
@@ -1503,7 +1588,7 @@ function applySheet(animate = false) {
 (() => {
   const hd = $('sheethandle'); let startY = null, startH = 0, moved = false;
   hd.addEventListener('pointerdown', e => {
-    if (!phone.matches) return;
+    if (!phone.matches || e.target.closest('#stripsettings')) return;
     startY = e.clientY; startH = $('panel').offsetHeight; moved = false;
     $('panel').classList.remove('anim'); hd.setPointerCapture(e.pointerId);
   });

@@ -764,6 +764,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
   @media (max-width: 800px) {
     body { display: block; }
     #mapwrap { position: fixed; inset: 0; }
+    #mapwrap { bottom: calc(-1 * var(--ios-gap, 0px)); }
+    #panel::after { content: ""; position: fixed; left: 0; right: 0; bottom: calc(-1 * var(--ios-gap, 0px)); height: var(--ios-gap, 0px); background: var(--paper); }
+    #panel.editing::after { background: var(--paper); }
     #panel { position: fixed; left: 0; right: 0; bottom: 0; height: var(--sheet-h, 128px); box-shadow: 0 -1px 0 var(--line), 0 -3px 10px rgb(24 34 18 / .16); }
     #panel.anim { transition: height .25s cubic-bezier(.2, .8, .2, 1); }
     #panel.collapsed .sheetbody { visibility: hidden; }
@@ -795,10 +798,17 @@ svg.leaflet-image-layer.leaflet-interactive path {
     body.editing .leaflet-control-zoom, body.editing .leaflet-bottom.leaflet-left, body.editing .leaflet-control-attribution { opacity: 0; pointer-events: none; }
     body.editing .leaflet-bottom.leaflet-left * { pointer-events: none; }
     #panel.editing .sheethandle, #panel.editing .sheetbody, #panel.editing .totalbar { display: none !important; }
-    .toast { left: 16px; right: 16px; width: auto; bottom: calc(var(--sheet-h, 120px) + 10px); }
-    #panel.editing .patchbar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    body > .toast { left: 16px; right: 16px; width: auto; bottom: calc(var(--sheet-h, 120px) + 10px); }
+    #panel.editing .patchbar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 8px max(16px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
                                box-shadow: inset 6px 0 0 var(--c, var(--moss)); }
     .patchbar .pbrow { display: flex; gap: 8px; align-items: center; min-width: 0; }
+    #panel.editing .patchbar { padding-top: 0; }
+    .pbgrab { display: flex; justify-content: center; align-items: center; height: 22px; margin: 0 -16px -4px; cursor: grab; touch-action: none; }
+    .patchbar .pbfoot { justify-content: space-between; margin-top: -2px; }
+    .patchbar .pbhint { font-size: 12px; text-align: right; min-width: 0; }
+    .pbgrab .bar { width: 40px; height: 4px; background: var(--edge); }
+    .dangerlink { border: 0; background: none; color: var(--danger); font-weight: 600; padding: 4px 0; min-height: 36px; flex: none; }
+    .dangerlink.armed { color: var(--moss-ink); background: var(--danger); padding: 6px 12px; }
     .patchbar .pname { flex: 1 1 auto; min-width: 0; width: 0; }
     .patchbar select { flex: none; background-color: var(--field); box-shadow: inset 4px 0 0 var(--c); padding-left: 14px; }
     .patchbar .pbnums { font-family: var(--mono); font-size: 14px; }
@@ -858,6 +868,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .lbl::before { display: none; }
   .marker-icon { width: 20px !important; height: 20px !important; margin: -10px 0 0 -10px !important; border: 3px solid #4A6B38 !important; background: #fff !important; border-radius: 0 !important; }
   .marker-icon-middle { width: 12px !important; height: 12px !important; margin: -6px 0 0 -6px !important; border-width: 2px !important; opacity: .85; }
+  .ico { width: 20px; height: 20px; vertical-align: -4px; }
+  .homelabel .ico { width: 18px; height: 18px; color: var(--moss); margin-right: 4px; }
+  .home-pin .ico { width: 18px; height: 18px; vertical-align: 0; margin-top: 4px; }
   .home-pin { font-size: 20px; line-height: 26px; text-align: center; background: #F8F9F3; color: #4A6B38; border: 2px solid #4A6B38; border-radius: 0; box-shadow: var(--shadow); }
 
   /* Drawing bar and messages over the map */
@@ -960,7 +973,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   <div class="toolbar">
     <form id="search" class="searchbox"><input id="q" type="search" placeholder="Address or postcode" aria-label="Find an address or postcode"><button aria-label="Search">Go</button></form>
     <div class="toolrow" id="toolrow">
-      <button id="locate" class="chip" aria-label="Go to my location" title="My location">◎<span class="long"> My location</span></button>
+      <button id="locate" class="chip" aria-label="Go to my location" title="My location"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4" stroke="currentColor" stroke-width="2"/></svg><span class="long"> My location</span></button>
       <button id="draw" class="chip primary">＋ Draw<span class="long"> patch</span></button>
     </div>
   </div>
@@ -978,16 +991,16 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 <aside id="panel">
   <div id="patchbar" class="patchbar" hidden>
+    <div class="pbgrab" id="pbgrab" role="button" tabindex="0" aria-label="Finish editing"><div class="bar"></div></div>
     <div class="pbrow">
       <input id="pbname" class="pname grow" aria-label="Patch name">
       <select id="pbdiff" aria-label="Difficulty"></select>
-      <button id="pbdel" class="iconbtn" aria-label="Delete patch">✕</button>
     </div>
     <div class="pbrow">
       <span id="pbnums" class="pbnums grow"></span>
-      <button id="pbdone" class="primary">Done</button>
+      <button id="pbdone" class="primary">Done ▾</button>
     </div>
-    <p class="muted">Drag corners to reshape. Double-tap a corner to remove it. Drag a midpoint to add one.</p>
+    <div class="pbrow pbfoot"><button id="pbdel" class="dangerlink">Delete patch</button><span class="muted pbhint">Double-tap a corner to remove it</span></div>
   </div>
   <div class="sheethandle" id="sheethandle">
     <div class="bar"></div>
@@ -1297,7 +1310,7 @@ let homeMarker = null;
 function drawHome() {
   if (homeMarker) { homeMarker.remove(); homeMarker = null; }
   if (store.home) homeMarker = L.marker([store.home.lat, store.home.lng], {
-    icon: L.divIcon({ className: 'home-pin', html: '⌂', iconSize: [30, 30] }), keyboard: false, interactive: false }).addTo(map);
+    icon: L.divIcon({ className: 'home-pin', html: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.5 12 4l8.5 7.5M6 10v9.5h12V10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="miter"/></svg>', iconSize: [30, 30] }), keyboard: false, interactive: false }).addTo(map);
 }
 
 const syncFarOut = () => map.getContainer().classList.toggle('farout', map.getZoom() < 17);
@@ -1384,7 +1397,7 @@ $('pbdiff').innerHTML = DIFFS.map(d => `<option value="${d.key}">${d.name}</opti
 function renderPatchbar() {
   const p = job.patches.find(x => x.id === selected);
   $('patchbar').hidden = !p;
-  if (!p) return;
+  if (!p) { if (armedPatchDel) resetPatchDel(); return; }
   const a = ringArea(p.latlngs);
   if (document.activeElement !== $('pbname')) $('pbname').value = p.name;
   $('pbdiff').value = p.diff;
@@ -1394,7 +1407,24 @@ function renderPatchbar() {
 const selPatch = () => job.patches.find(x => x.id === selected);
 $('pbname').onchange = e => { const p = selPatch(); if (p) { p.name = e.target.value || 'Patch'; save(); render(); } };
 $('pbdiff').onchange = e => { const p = selPatch(); if (p) { p.diff = e.target.value; save(); render(); } };
-$('pbdel').onclick = () => { const p = selPatch(); if (p) deletePatch(p); };
+// Delete needs a second tap, and Undo can still bring the patch back
+let armedPatchDel = null;
+$('pbdel').onclick = () => {
+  const p = selPatch(); if (!p) return;
+  if (!armedPatchDel) {
+    $('pbdel').textContent = 'Tap again to delete'; $('pbdel').classList.add('armed');
+    armedPatchDel = setTimeout(resetPatchDel, 3000); return;
+  }
+  resetPatchDel(); deletePatch(p);
+};
+function resetPatchDel() { clearTimeout(armedPatchDel); armedPatchDel = null; $('pbdel').textContent = 'Delete patch'; $('pbdel').classList.remove('armed'); }
+// The grab bar: tap it or swipe it down to finish editing
+(() => {
+  const g = $('pbgrab'); let y0 = null;
+  g.addEventListener('pointerdown', e => { y0 = e.clientY; g.setPointerCapture(e.pointerId); });
+  g.addEventListener('pointerup', e => { if (y0 === null) return; const dy = e.clientY - y0; y0 = null; if (dy > -10) select(null); });
+  g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(null); } });
+})();
 $('pbdone').onclick = () => select(null);
 function deletePatch(p) {
   const at = job.patches.indexOf(p), owner = job;
@@ -1407,6 +1437,10 @@ function deletePatch(p) {
     job.patches.splice(Math.min(at, job.patches.length), 0, p); addLayer(p); save(); render();
   });
 }
+map.getContainer().addEventListener('pointerdown', e => {
+  if (e.target.closest('.leaflet-control') || !isPhone() || typeof sheetOpen === 'undefined' || !sheetOpen || selected != null) return;
+  setSheet(false);
+});
 map.on('click', () => { if (!drawing && selected !== null && Date.now() > (window.__keepSelectUntil || 0)) select(null); });
 
 // Drawing
@@ -1537,7 +1571,7 @@ for (const [id, k] of [['permile', 'perMile'], ['freemiles', 'freeMiles']]) {
 $('travelcharge').onchange = e => { store.travel.charge = e.target.checked; save(false); fillInputs(); render(); };
 $('returntrip').onchange = e => { store.travel.returnTrip = e.target.checked; save(false); render(); };
 function homeLabel() {
-  $('homelabel').innerHTML = store.home ? '⌂ ' + esc(store.home.label) : '<span class="muted">No home set yet.</span>';
+  $('homelabel').innerHTML = store.home ? '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.5 12 4l8.5 7.5M6 10v9.5h12V10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="miter"/></svg> ' + esc(store.home.label) : '<span class="muted">No home set yet.</span>';
 }
 function setHome(lat, lng, label) {
   store.home = { lat, lng, label }; save(false); drawHome(); homeLabel(); render();
@@ -1575,7 +1609,7 @@ function renderTravel() {
   if (document.activeElement !== $('callout')) $('callout').value = tr.override ? job.travelOverride : (tr.estimate != null && job.patches.length ? tr.estimate.toFixed(2) : '');
   let s = '';
   if (!job.patches.length) s = '';
-  else if (tr.nohome) s = 'Set your home in ⚙ Settings to estimate travel.';
+  else if (tr.nohome) s = 'Set your home in Settings to estimate travel.';
   else {
     const dist = (tr.approx ? 'about ' : '') + miles(tr.miles) + ' each way' + (tr.pending ? ' (checking route…)' : tr.approx ? ' (straight-line estimate)' : '');
     s = tr.charged > 0
@@ -1663,7 +1697,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.0.1';   // keep in step with version.json
+const APP_VERSION = '1.1.0';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');
@@ -1675,6 +1709,7 @@ function renderDiag() {
     ['Opened as', mode],
     ['Space at top', Math.round(parseFloat(cs.paddingTop)) + 'px'],
     ['Space at bottom', Math.round(parseFloat(cs.paddingBottom)) + 'px'],
+    ['Bottom strip fix', getComputedStyle(document.documentElement).getPropertyValue('--ios-gap').trim() || '0px'],
     ['Screen', screen.width + '×' + screen.height + ', window ' + innerWidth + '×' + innerHeight],
     ['iOS', ios],
     ['Status bar', document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]').content],
@@ -1778,7 +1813,7 @@ $('copy').onclick = async () => {
   if (biz.name || biz.phone) lines.push('', [biz.name, biz.phone].filter(Boolean).join('\n'));
   const text = lines.join('\n');
   $('quote').value = text; $('quote').hidden = false;
-  try { await navigator.clipboard.writeText(text); $('copy').textContent = 'Copied ✓'; $('quote').hidden = true; }
+  try { await navigator.clipboard.writeText(text); $('copy').textContent = 'Copied'; $('quote').hidden = true; }
   catch (e) { $('quote').select(); $('copy').textContent = 'Copy from the box'; }
   setTimeout(() => $('copy').textContent = 'Copy quote', 2000);
 };
@@ -1848,6 +1883,19 @@ function applySheet(animate = false) {
   hd.addEventListener('pointercancel', e => { startY = null; applySheet(true); });
 })();
 $('sheettoggle').onclick = e => { if (e.detail === 0) setSheet(!sheetOpen); };   // keyboard; taps are handled by the handle
+// On some iPhones, a home-screen app that runs under the status bar gets a usable screen that is short by
+// the status bar's height, leaving an unpainted strip at the bottom. Measure it and paint into it.
+function fixIOSGap() {
+  let gap = 0;
+  if (navigator.standalone) {
+    const tall = innerHeight > innerWidth ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+    gap = Math.max(0, tall - innerHeight);
+    if (gap > 80) gap = 0;   // not the quirk; leave the layout alone
+  }
+  document.documentElement.style.setProperty('--ios-gap', gap + 'px');
+}
+fixIOSGap();
+addEventListener('resize', fixIOSGap);
 phone.addEventListener('change', () => applySheet());
 addEventListener('resize', () => applySheet());
 // keep the part of the map you are looking at clear of the sheet

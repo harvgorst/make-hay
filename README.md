@@ -11,6 +11,14 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 1.1.0
+
+- Patch bar: a grab bar and **Done** to finish editing. **Delete patch** moves to the bottom and needs a second tap.
+- Tapping or dragging the map tucks the job sheet away.
+- The Undo message always sits above the bottom panel.
+- On iPhones, the home-screen app paints the strip iOS sometimes leaves at the bottom.
+- Icons replace symbol characters.
+
 ## Version 1.0.1
 
 - Fix: double-tapping a corner now removes it on iPhone.

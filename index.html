@@ -723,9 +723,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
     --field: #E4E8DA;       /* fill for things you type into */
     --topbar: #EDF0E6;      /* same as the panels; iOS draws its own status bar above it */
     --topbar-line: #D3D8C9;
-    --display: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;   /* retro typewriter-style figures */
+    --display: Barlow, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --body: Barlow, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "Barlow Semi Condensed", Barlow, system-ui, sans-serif;   /* figures: narrow, upright, like lettering on farm machinery */
     --sheet-overlap: env(safe-area-inset-bottom, 0px);
   }
   @media (prefers-color-scheme: dark) {
@@ -989,7 +989,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .mix i { display: block; height: 100%; background: var(--c); min-width: 2px; }
   .jobcard .mix { width: 34px; height: 8px; }
   .totalbar .tlabel { font-size: 13px; color: var(--muted); }
-  .totalbar .tbig { font: 700 24px/1.1 var(--mono); letter-spacing: -.03em; }
+  .totalbar .tbig { font: 700 26px/1.1 var(--mono); }
   .totalbar .tsub { font: 12px/1.3 var(--mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.3em; }
   .totalbar button:disabled { opacity: .45; cursor: default; }
   .totalbar button { border-radius: 0; padding: 8px 18px; min-height: 46px; align-self: stretch; }
@@ -1028,6 +1028,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
   /* Slightly rounded corners on controls and cards; edge-to-edge bars and the map stay square */
   :root { --r: 6px; }
+  body { font-variant-numeric: tabular-nums; }
   body button, body input, body select, body textarea, .searchbox, .money, .patch, .jobcard, .group, .drawbar, body > .toast, .guidesheet,
   .guideopt, .restore, .diag, .updatebar, .seg, .empty, .pill, .lbl, .jumps a, .splash img { border-radius: var(--r) !important; }
   .searchbox, .money, .seg, .leaflet-bar { overflow: hidden; }
@@ -1038,7 +1039,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@400;500;700&display=swap">
 </head>
 <body>
 <div id="splash" class="splash" aria-hidden="true"><img src="splash/logo.png" alt=""></div>
@@ -1801,7 +1802,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.7.0';   // keep in step with version.json
+const APP_VERSION = '1.7.1';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');

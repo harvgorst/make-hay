@@ -11,6 +11,10 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 1.7.1
+
+- New fonts: Barlow for text and Barlow Semi Condensed for areas and prices, in the style of road signs and farm machinery lettering.
+
 ## Version 1.7.0
 
 - Rates are whole £20s per acre. Your saved rates were rounded once to the nearest £20, and the rate boxes now step in £20. The standard rates are £1,460, £1,540, £1,700 and £1,780 per acre.

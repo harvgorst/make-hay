@@ -780,6 +780,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .updatebar span { flex: 1; min-width: 0; }
   .updatebar button { border: 1px solid var(--moss-ink); color: var(--moss-ink); font-weight: 700; text-align: center; }
   body.editing .updatebar, body.drawing .updatebar { display: none !important; }
+  body.drawing .leaflet-bottom.leaflet-left { visibility: hidden; }
   .ratelabel { align-items: flex-start !important; }
   .ratelabel .dot { margin-top: 4px; }
   .guide { display: block; font-size: 12px; line-height: 1.35; color: var(--muted); font-weight: 400; margin-top: 2px; max-width: 26ch; }
@@ -826,13 +827,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
     .sheethandle { display: block; flex: none; position: relative; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
                    padding: 6px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
     .sheethandle .bar { width: 40px; height: 4px; background: var(--edge); margin: 0 auto 4px; }
-    .sheethandle .sum { display: flex; align-items: center; gap: 10px; min-height: 34px; padding-right: 44px; }
+    .sheethandle .sum { display: flex; align-items: center; gap: 10px; min-height: 34px; }
     #panel:not(.collapsed) .sheethandle .sum { display: none; }
     @media (max-width: 360px) { #sumcount { display: none; } }
     #panel:not(.collapsed) .sheethandle { min-height: 30px; }
     #panel:not(.collapsed) .sheethandle .chev { position: absolute; width: 1px; height: 1px; min-height: 0; overflow: hidden; clip-path: inset(50%); }
     .sheethandle .sumname { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sheethandle .chev { position: absolute; top: 2px; right: max(8px, env(safe-area-inset-right, 0px)); width: 44px; min-height: 40px; border: 0; padding: 0; text-align: center; font-size: 18px; color: var(--muted); background: none; }
+    .sheethandle .chev { clip-path: inset(50%); overflow: hidden; position: absolute; top: 2px; right: max(8px, env(safe-area-inset-right, 0px)); width: 44px; min-height: 40px; border: 0; padding: 0; text-align: center; font-size: 18px; color: var(--muted); background: none; }
     #panel.collapsed .totalbar { border-top: 0; padding-top: 4px; }
   }
   @media (max-width: 800px) and (prefers-reduced-motion: reduce) { #panel.anim { transition: none; } }
@@ -927,7 +928,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .home-pin { font-size: 20px; line-height: 26px; text-align: center; background: #F8F9F3; color: #4A6B38; border: 2px solid #4A6B38; border-radius: 0; box-shadow: var(--shadow); }
 
   /* Drawing bar and messages over the map */
-  .drawbar { position: absolute; z-index: 1000; left: 50%; transform: translateX(-50%); bottom: calc(var(--sheet-overlap) + 14px);
+  .drawbar { position: absolute; z-index: 1000; left: 50%; transform: translateX(-50%); bottom: calc(var(--sheet-overlap) + 24px);
              width: min(440px, calc(100% - 24px)); background: var(--card); border-radius: 0; box-shadow: var(--shadow); padding: 12px; display: grid; gap: 10px; }
   .drawbar { padding: 10px; gap: 8px; }
   .drawbar p { text-align: center; font-weight: 700; font-size: 15px; }
@@ -945,14 +946,22 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .headbtns { display: flex; gap: 6px; flex: none; }
   .headbtns button { border-radius: 0; padding: 8px 14px; text-align: center; }
   #patches { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; }
-  .patch { background: var(--card); border-radius: 0; padding: 8px 8px 12px 18px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px;
+  .patch { background: var(--card); border-radius: 0; padding: 8px 12px 10px 18px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px;
            cursor: pointer; box-shadow: inset 6px 0 0 var(--c); }
   .patch.sel { box-shadow: inset 6px 0 0 var(--c), inset 0 0 0 2px var(--moss); }
   .patch .pname { flex: 1; min-width: 0; font-weight: 600; border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; padding: 6px 0; }
   .patch .pname:hover, .patch .pname:focus { border-bottom-color: var(--edge); outline: none; }
   .patch select { flex: none; border-radius: 0; background-color: var(--field); box-shadow: inset 4px 0 0 var(--c); padding-left: 14px; padding-right: 8px; font-weight: 500; }
   .patch .nums { display: flex; justify-content: space-between; align-items: baseline; padding-right: 10px; font-family: var(--mono); font-size: 14px; }
-  .patch .price { font-weight: 700; font-size: 14px; }
+  .patch .price { font: 700 17px/1.2 var(--mono); align-self: center; white-space: nowrap; }
+  .ptop { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; align-items: center; }
+  .ptop .pname { font-size: 16px; padding: 2px 0; min-height: 0; }
+  .ptop .parea { grid-column: 1 / -1; font: 13px/1.3 var(--mono); }
+  .pctl { display: flex; align-items: center; gap: 8px; }
+  .pctl select { min-height: 40px; font-size: 14px; }
+  .pctl .guidebtn { min-height: 40px; }
+  .pdel { margin-left: auto; min-height: 40px; padding: 4px 6px; border: 0; background: none; color: var(--muted); font-size: 13px; font-weight: 500; }
+  .pdel.armed { color: var(--danger); font-weight: 600; }
   .iconbtn { width: 44px; padding: 0; border: 0; background: none; color: var(--muted); font-size: 20px; flex: none; text-align: center; }
   @media (hover: hover) { .iconbtn:hover { color: var(--danger); } }
   .empty { background: var(--card); border-radius: 0; padding: 16px; color: var(--muted); }
@@ -965,6 +974,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .money:focus-within { outline: 2px solid var(--moss); outline-offset: -2px; }
   .money > span { color: var(--muted); }
   .gbp { font-family: var(--display); font-weight: 600; margin-right: .04em; }
+  .tsub .gbp { font-weight: 400; }
   .money > span, .tbig .gbp { font-family: var(--display); }
   .money input { border: 0; background: none; text-align: right; width: 100%; outline: none; min-height: 43px; padding-left: 4px; font-family: var(--mono); }
   #quote { width: 100%; height: 150px; font: 13px/1.45 var(--mono); border-radius: 0; border: 0; border-bottom: 1px solid var(--edge); background: var(--field); padding: 10px; margin-top: 10px; }
@@ -1035,7 +1045,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 <div id="mapwrap">
   <div id="map"></div>
   <div class="toolbar">
-    <form id="search" class="searchbox"><input id="q" type="search" placeholder="Address or postcode" aria-label="Find an address or postcode"><button aria-label="Search">Go</button></form>
+    <form id="search" class="searchbox"><input id="q" type="search" placeholder="Search place" aria-label="Find an address or postcode"><button aria-label="Search">Go</button></form>
     <div class="toolrow" id="toolrow">
       <button id="locate" class="chip" aria-label="Go to my location" title="My location"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4" stroke="currentColor" stroke-width="2"/></svg><span class="long"> My location</span></button>
       <button id="draw" class="chip primary">＋ Draw<span class="long"> patch</span></button>
@@ -1223,7 +1233,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':
 const money = n => '£' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 // Areas are stored in m² and rates per m²; the Units setting only changes how they are shown and typed
 const UNITS = {
-  acre: { m2: 4046.8564224, label: 'acre', rateDp: 2, step: '1' },
+  acre: { m2: 4046.8564224, label: 'acre', rateDp: 0, step: '20' },
   m2:   { m2: 1,            label: 'm²',   rateDp: 2, step: '0.01' },
   ft2:  { m2: 0.09290304,   label: 'ft²',  rateDp: 4, step: '0.0001' },
 };
@@ -1233,6 +1243,9 @@ const fmtIn = (a, u) => u === 'acre' ? (a / UNITS.acre.m2).toFixed(2) + ((a / UN
 const fmtArea = a => fmtIn(a, (typeof store !== 'undefined' && store.units) || 'acre');
 // the second, smaller figure: m² when working in acres, otherwise acres
 const acres = a => ((typeof store !== 'undefined' && store.units) || 'acre') === 'acre' ? fmtIn(a, 'm2') : fmtIn(a, 'acre');
+// Rates are kept to whole £20s per acre (the owner's choice, made in 1.6.6)
+const round20 = perM2 => Math.round(+perM2 * UNITS.acre.m2 / 20) * 20 / UNITS.acre.m2;
+const roundRates = r => Object.fromEntries(DIFFS.map(d => [d.key, round20(r[d.key])]));
 const rateIn = perM2 => (+perM2 * unit().m2).toFixed(unit().rateDp);
 const rateLabel = perM2 => '£' + (+perM2 * unit().m2).toLocaleString('en-GB', { minimumFractionDigits: unit().rateDp, maximumFractionDigits: unit().rateDp });
 const fmtDate = t => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -1242,7 +1255,7 @@ const fmtDate = t => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', m
 // job   = { id, name, patches: [{id, name, diff, latlngs}], travelOverride: £|null, route: {key, miles, approx}, nextId, created, updated }
 // Rates and the minimum charge are one set shared by every job. Nothing but typing in the Rates boxes changes them.
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-const FACTORY = Object.fromEntries(DIFFS.map(d => [d.key, d.rate]));
+const FACTORY = Object.fromEntries(DIFFS.map(d => [d.key, Math.round(d.rate * 4046.8564224 / 20) * 20 / 4046.8564224]));
 let store = { rates: null, minimum: null, defaults: { callout: 0 },
               jobs: [], currentId: null, view: null, base: 'sat', labels: true };
 function makeJob(name) {
@@ -1286,6 +1299,8 @@ function save(touch = true) {
   if (touch) job.updated = Date.now();
   try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {}
 }
+// One-off, asked for by the owner: round the saved rates to the nearest £20 per acre
+if (!store.rates20) { store.rates = roundRates(store.rates); store.rates20 = true; save(false); }
 
 // Geodesic area of a lat/lng ring, in square metres
 function ringArea(ll) {
@@ -1386,7 +1401,9 @@ const syncFarOut = () => map.getContainer().classList.toggle('farout', map.getZo
 map.on('zoomend', syncFarOut); syncFarOut();
 
 const SNAP = 8;   // pixels within which a corner snaps to another patch's edge or corner (library default is 20)
-map.pm.setGlobalOptions({ snapDistance: SNAP });
+map.pm.setGlobalOptions({ snapDistance: SNAP,
+  templineStyle: { color: '#FDF8E1', weight: 3 }, hintlineStyle: { color: '#FDF8E1', weight: 2, dashArray: [5, 6] },
+  pathOptions: { color: '#FDF8E1', weight: 3 } });
 const layers = {};   // patch id -> Leaflet polygon
 let selected = null, drawing = false;
 
@@ -1574,20 +1591,23 @@ function render() {
     const a = ringArea(p.latlngs), price = a * (store.rates[p.diff] || 0);
     const layer = layers[p.id];
     layer.setStyle(styleFor(p));
-    layer.setTooltipContent(esc(p.name) + '<br><small>' + fmtArea(a) + ', ' + D[p.diff].name.toLowerCase() + '</small>');
+    layer.setTooltipContent(esc(p.name) + '<br><small>' + fmtArea(a) + ', ' + D[p.diff].name + '</small>');
     const tip = layer.getTooltip() && layer.getTooltip().getElement();
     if (tip) tip.style.visibility = p.id === selected ? 'hidden' : '';
     const el = document.createElement('div');
     el.className = 'patch' + (p.id === selected ? ' sel' : '');
     el.style.setProperty('--c', D[p.diff].color);
     el.innerHTML = `
-      <div class="row">
+      <div class="ptop">
         <input class="pname" value="${esc(p.name)}" aria-label="Patch name">
-        <select aria-label="Difficulty">${DIFFS.map(d => `<option value="${d.key}"${d.key === p.diff ? ' selected' : ''}>${d.name}</option>`).join('')}</select>
-        <button class="iconbtn" title="Delete patch" aria-label="Delete ${esc(p.name)}">✕</button>
+        <span class="price">${gbp(money(price))}</span>
+        <span class="parea">${fmtArea(a)} <span class="muted">${acres(a)}</span></span>
       </div>
-      <div class="nums"><span>${fmtArea(a)} <span class="muted">${acres(a)}</span></span><span class="price">${gbp(money(price))}</span></div>
-      <div class="guideline"><span class="muted">${D[p.diff].guide}</span><button class="guidebtn" data-guide="${p.id}">Guide</button></div>
+      <div class="pctl">
+        <select aria-label="Difficulty" title="${esc(D[p.diff].guide)}">${DIFFS.map(d => `<option value="${d.key}"${d.key === p.diff ? ' selected' : ''}>${d.name}</option>`).join('')}</select>
+        <button class="guidebtn" data-guide="${p.id}">Guide</button>
+        <button class="pdel" aria-label="Delete ${esc(p.name)}">Delete</button>
+      </div>
       ${p.id === selected ? '<div class="muted">Drag corners on the map to reshape. Double-tap a corner to remove it. Drag a small midpoint to add one.</div>' : ''}`;
     el.onclick = ev => {
       if (ev.target.closest('input,select,button') || selected === p.id) return;
@@ -1597,7 +1617,15 @@ function render() {
     };
     el.querySelector('input').onchange = ev => { p.name = ev.target.value || 'Patch'; save(); render(); };
     el.querySelector('select').onchange = ev => { p.diff = ev.target.value; save(); render(); };
-    el.querySelector('button.iconbtn').onclick = () => deletePatch(p);
+    el.querySelector('.pdel').onclick = ev => {   // two taps, like the patch bar
+      const b = ev.currentTarget;
+      if (!b.classList.contains('armed')) {
+        b.classList.add('armed'); b.textContent = 'Tap again to delete';
+        setTimeout(() => { if (b.isConnected) { b.classList.remove('armed'); b.textContent = 'Delete'; } }, 3000);
+        return;
+      }
+      deletePatch(p);
+    };
     el.querySelector('.guidebtn').onclick = () => openGuide(p.id);
     $('patches').appendChild(el);
   }
@@ -1635,7 +1663,10 @@ for (const d of DIFFS) $('r-' + d.key).oninput = e => {
   const v = readNum(e.target.value); if (v === null) return;
   store.rates[d.key] = v / unit().m2; save(false); render(); renderRestore();
 };
-for (const d of DIFFS) $('r-' + d.key).onblur = e => { e.target.value = rateIn(store.rates[d.key]); };
+for (const d of DIFFS) $('r-' + d.key).onblur = e => {
+  if (store.units === 'acre') { store.rates[d.key] = round20(store.rates[d.key]); save(false); render(); renderRestore(); }
+  e.target.value = rateIn(store.rates[d.key]);
+};
 for (const [id, k] of [['permile', 'perMile'], ['freemiles', 'freeMiles']]) {
   $(id).oninput = e => { const v = readNum(e.target.value); if (v === null) return; store.travel[k] = v; save(false); render(); };
   $(id).onblur = e => { e.target.value = k === 'perMile' ? fix2(store.travel[k]) : store.travel[k]; };
@@ -1724,7 +1755,7 @@ function loadJob(j, fit = true) {
 
 // ---------- Earlier rates ----------
 // Offer any other rate sets still saved on this device (from the previous version or from individual jobs) so lost prices can be got back.
-const ratesKey = r => DIFFS.map(d => (+r[d.key]).toFixed(2)).join('|');
+const ratesKey = r => DIFFS.map(d => Math.round(+r[d.key] * UNITS.acre.m2 / 20)).join('|');
 function earlierRates() {
   const seen = new Set([ratesKey(store.rates), ratesKey(FACTORY)]), out = [];
   const add = (r, from) => { if (!validRates(r)) return; const k = ratesKey(r); if (seen.has(k)) return; seen.add(k); out.push({ r, from }); };
@@ -1742,13 +1773,13 @@ function renderRestore() {
       <button data-i="${i}">Use these</button>
     </div>`).join('');
   $('restorelist').querySelectorAll('button').forEach(b => b.onclick = () => {
-    store.rates = { ...sets[+b.dataset.i].r }; save(false); fillInputs(); render(); renderRestore();
+    store.rates = roundRates(sets[+b.dataset.i].r); save(false); fillInputs(); render(); renderRestore();
   });
 }
 $('restorehide').onclick = () => { store.restoreDismissed = true; save(false); renderRestore(); };
 
 // Put the standard rates back, after a second tap to confirm
-const defaultsLabel = () => 'Use standard rates (' + DIFFS.map(d => rateLabel(d.rate)).join(', ') + ' per ' + unit().label + ')';
+const defaultsLabel = () => 'Use standard rates (' + DIFFS.map(d => rateLabel(FACTORY[d.key])).join(', ') + ' per ' + unit().label + ')';
 let armedDefaults = null;
 $('defaultrates').textContent = defaultsLabel();
 $('defaultrates').onclick = () => {
@@ -1770,7 +1801,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.6.5';   // keep in step with version.json
+const APP_VERSION = '1.7.0';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');
@@ -1905,7 +1936,7 @@ function drawMix(el, j) {
 
 // ---------- Phone bottom sheet ----------
 const phone = matchMedia('(max-width: 800px)');
-const sheetOpenH = () => Math.round(innerHeight * 0.68);
+const sheetOpenH = () => Math.round(innerHeight * 0.5);
 function sheetClosedH() {
   const tb = $('totalbar'), hd = $('sheethandle');
   return hd.offsetHeight + tb.offsetHeight;
@@ -1914,6 +1945,15 @@ let sheetOpen = !!store.sheetOpen;
 function setSheet(open, animate = true) {
   sheetOpen = open; store.sheetOpen = open; save(false);
   applySheet(animate);
+  if (open && phone.matches) keepJobInView();
+}
+// When the sheet opens, make sure the job's patches are still visible above it
+function keepJobInView() {
+  const ls = Object.values(layers); if (!ls.length || drawing) return;
+  const b = L.featureGroup(ls).getBounds(), size = map.getSize(), over = sheetOpenH();
+  const tl = map.latLngToContainerPoint(b.getNorthWest()), br = map.latLngToContainerPoint(b.getSouthEast());
+  if (tl.x >= 10 && tl.y >= 10 && br.x <= size.x - 10 && br.y <= size.y - over - 10) return;
+  map.fitBounds(b, { maxZoom: 19, paddingTopLeft: [30, 30], paddingBottomRight: [30, over + 30] });
 }
 function applySheet(animate = false) {
   const panel = $('panel');

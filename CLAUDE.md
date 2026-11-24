@@ -13,7 +13,7 @@ A phone-first web app for pricing scything work: draw patches on a satellite map
 
 ## Rules for the app
 
-- **Never change the user's saved rates** (Easy, Medium, Hard, Very hard, minimum charge) automatically. Only the user edits them, in Settings. The standard rates (£0.36 / £0.38 / £0.42 / £0.44 per m²) apply only to a new device or via the "Use standard rates" button.
+- **Never change the user's saved rates** (Easy, Medium, Hard, Very hard, minimum charge) automatically. Only the user edits them, in Settings. Rates are kept to whole £20s per acre (the owner asked for this; it was applied to saved rates once, in 1.7.0, flagged by `rates20`). The standard rates (£1,460 / £1,540 / £1,700 / £1,780 per acre, from £0.36 / £0.38 / £0.42 / £0.44 per m² rounded) apply only to a new device or via the "Use standard rates" button.
 - **Quotes go to customers**: no difficulty names, no per-m² rates, and no mention of the app's name. The app is separate from the contractor; the business name and phone come from Settings.
 - Saved data lives in `localStorage` under `scythe-pricer-v2` (v1 is migrated). Don't rename the key or break older saved data; add migrations instead.
 - Keep the web address; saved data is per site (`harvgorst.github.io`), so a path change keeps it but a host change would not.

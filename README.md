@@ -11,6 +11,14 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 1.7.0
+
+- Rates are whole £20s per acre. Your saved rates were rounded once to the nearest £20, and the rate boxes now step in £20. The standard rates are £1,460, £1,540, £1,700 and £1,780 per acre.
+- Patch cards are about half the height. They show the name and price large, with the area underneath, and the difficulty, Guide and Delete in one row. Delete needs a second tap. The difficulty description is in Guide.
+- The job sheet opens to half the screen, and the map moves so the job's patches stay in view above it.
+- The line you draw is cream instead of blue, and the draw bar sits clear of the map credits.
+- The search box says "Search place", the ▲ on the strip is gone (tap or drag the strip), and map labels say "Medium" rather than "medium".
+
 ## Version 1.6.5
 
 - The open job sheet loses the empty row above the tabs, giving the map more room.

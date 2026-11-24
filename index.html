@@ -734,6 +734,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
+  /* iPhones can leave a strip below the app that only shows the page's base colour; match it to the bottom panel */
+  html { background: var(--paper); }
   body { font: 15px/1.45 var(--body); background: var(--ground); color: var(--ink);
          display: grid; grid-template-columns: 1fr 400px; height: 100dvh; overflow: hidden; }
   #mapwrap { position: relative; min-height: 0; }
@@ -1755,7 +1757,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.4.0';   // keep in step with version.json
+const APP_VERSION = '1.4.1';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');

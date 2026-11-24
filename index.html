@@ -848,7 +848,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     body.editing .leaflet-bottom.leaflet-left * { pointer-events: none; }
     #panel.editing .sheethandle, #panel.editing .sheetbody, #panel.editing .totalbar { display: none !important; }
     body > .toast { left: 16px; right: 16px; width: auto; bottom: calc(var(--sheet-h, 120px) + 10px); }
-    #panel.editing .patchbar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 8px max(16px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    #panel.editing .patchbar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 8px max(16px, env(safe-area-inset-right, 0px)) max(6px, calc(env(safe-area-inset-bottom, 0px) - 16px)) max(16px, env(safe-area-inset-left, 0px));
                                box-shadow: inset 6px 0 0 var(--c, var(--moss)); }
     .patchbar .pbrow { display: flex; gap: 8px; align-items: center; min-width: 0; }
     #panel.editing .patchbar { padding-top: 0; }
@@ -967,7 +967,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   /* Total pinned to the bottom of the panel */
   .totalbar { flex: none; z-index: 2; display: flex; align-items: center; gap: 14px;
               background: var(--paper); border-top: 1px solid var(--line);
-              padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+              padding: 10px max(16px, env(safe-area-inset-right, 0px)) max(10px, calc(env(safe-area-inset-bottom, 0px) - 10px)) max(16px, env(safe-area-inset-left, 0px)); }
   .totalbar .tbox { flex: 1; min-width: 0; display: grid; }
   .totalbar .trow { display: flex; align-items: center; gap: 12px; }
   .mix { display: flex; flex-direction: column; gap: 2px; width: 46px; flex: none; }
@@ -1757,7 +1757,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.6.1';   // keep in step with version.json
+const APP_VERSION = '1.6.2';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');

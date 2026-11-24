@@ -1012,6 +1012,16 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .restoreset > span { min-width: 0; }
   .restoreset button { flex: none; }
   @media (prefers-reduced-motion: no-preference) { button, .patch, .jobcard { transition: background-color .15s, box-shadow .15s; } }
+
+  /* Slightly rounded corners on controls and cards; edge-to-edge bars and the map stay square */
+  :root { --r: 4px; }
+  body button, body input, body select, body textarea, .searchbox, .money, .patch, .jobcard, .group, .drawbar, body > .toast, .guidesheet,
+  .guideopt, .restore, .diag, .updatebar, .seg, .empty, .pill, .lbl, .jumps a, .splash img { border-radius: var(--r); }
+  .searchbox, .money, .seg, .leaflet-bar { overflow: hidden; }
+  .searchbox input, .searchbox button, .money input, .seg label, body .tabs button, .switch input, .patchbar .pname, .patch .pname, .jobtitle { border-radius: 0; }
+  .leaflet-bar, .leaflet-touch .leaflet-bar, .leaflet-control-layers, .leaflet-control-layers-toggle { border-radius: var(--r) !important; }
+  .leaflet-bar a, .leaflet-touch .leaflet-bar a { border-radius: 0 !important; }
+  .switch input { border-radius: 3px; }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1757,7 +1767,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.6.2';   // keep in step with version.json
+const APP_VERSION = '1.6.3';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');

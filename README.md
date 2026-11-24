@@ -11,6 +11,10 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 1.6.1
+
+- Back to iOS's own status bar so there's no strip at the bottom; the search bar and buttons sit close to the top. On iPhone, re-add the icon once.
+
 ## Version 1.6.0
 
 - The top bar runs up behind the clock in one continuous colour: moss green in light mode, dark green in dark mode. The search bar and buttons sit just under the clock. On iPhone, re-add the icon once.

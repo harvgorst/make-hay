@@ -33,12 +33,12 @@
 <link rel="apple-touch-startup-image" media="screen and (device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="splash/splash-420x912@3-landscape.png">
 <link rel="icon" href="icon-64.png" sizes="64x64">
 <link rel="icon" href="icon-192.png" sizes="192x192">
-<meta name="theme-color" content="#4A6B38" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#EDF0E6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1B2019" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Make Hay">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>/* required styles */
 
 .leaflet-pane,
@@ -721,8 +721,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
     --danger: #9E3A2D;
     --shadow: 0 0 0 1px rgb(24 34 18 / .18), 0 2px 3px rgb(24 34 18 / .22);   /* hard, small: only for controls floating on the map */
     --field: #E4E8DA;       /* fill for things you type into */
-    --topbar: #4A6B38;      /* top bar runs up behind the clock, which iOS always draws in white */
-    --topbar-line: #3E5A2F;
+    --topbar: #EDF0E6;      /* same as the panels; iOS draws its own status bar above it */
+    --topbar-line: #D3D8C9;
     --display: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;   /* retro typewriter-style figures */
@@ -891,16 +891,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   /* Map controls */
   .toolbar { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; display: flex; flex-direction: row; align-items: center; gap: 8px;
              background: var(--topbar); border-bottom: 1px solid var(--topbar-line);
-             padding: calc(2px + env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) 6px max(10px, env(safe-area-inset-left, 0px)); }
-  /* light mode: light controls on the moss bar, with Draw in hay cream */
-  .toolbar .searchbox { background: var(--card); border-bottom-color: transparent; }
-  .toolbar .chip { border-color: transparent; }
-  .toolbar .chip.primary { background: #F3EAD2; color: #1F261C; border-color: #F3EAD2; }
-  @media (prefers-color-scheme: dark) {
-    .toolbar .searchbox { background: var(--field); border-bottom-color: var(--edge); }
-    .toolbar .chip { border-color: var(--edge); }
-    .toolbar .chip.primary { background: var(--moss); color: var(--moss-ink); border-color: var(--moss); }
-  }
+             padding: calc(3px + env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) 6px max(10px, env(safe-area-inset-left, 0px)); }
   .toolbar > * { pointer-events: auto; }
   .searchbox { display: flex; flex: 1 1 auto; min-width: 0; max-width: 460px; background: var(--field); border-bottom: 1px solid var(--edge); }
   .searchbox input { background: none; border-bottom: 0; }
@@ -1766,7 +1757,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.6.0';   // keep in step with version.json
+const APP_VERSION = '1.6.1';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');

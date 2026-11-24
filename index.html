@@ -739,7 +739,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   html, body { height: 100%; margin: 0; }
   /* iPhones can leave a strip below the app that only shows the page's base colour; match it to the bottom panel */
   html { background: var(--paper); }
-  body { font: 15px/1.45 var(--body); background: var(--ground); color: var(--ink);
+  body { font: 15px/1.45 var(--body); background: var(--topbar);   /* iOS paints the clock strip in this colour */ color: var(--ink);
          display: grid; grid-template-columns: 1fr 400px; height: 100dvh; overflow: hidden; }
   #mapwrap { position: relative; min-height: 0; }
   #map { position: absolute; inset: 0; background: var(--ground); }
@@ -1815,7 +1815,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.7.3';   // keep in step with version.json
+const APP_VERSION = '1.7.4';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');
@@ -2022,11 +2022,8 @@ $('sheettoggle').onclick = e => { if (e.detail === 0) setSheet(!sheetOpen); };  
 // the status bar's height, leaving an unpainted strip at the bottom. Measure it and paint into it.
 function fixIOSGap() {
   let gap = 0;
-  if (navigator.standalone) {
-    const tall = innerHeight > innerWidth ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
-    gap = Math.max(0, tall - innerHeight);
-    if (gap > 80) gap = 0;   // not the quirk; leave the layout alone
-  }
+  // Only needed with the black-translucent status bar, which the app no longer uses: with iOS's own status bar
+  // the window is legitimately shorter than the screen, and extending the map would hide its bottom controls.
   document.documentElement.style.setProperty('--ios-gap', gap + 'px');
 }
 fixIOSGap();

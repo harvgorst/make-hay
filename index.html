@@ -33,11 +33,12 @@
 <link rel="apple-touch-startup-image" media="screen and (device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="splash/splash-420x912@3-landscape.png">
 <link rel="icon" href="icon-64.png" sizes="64x64">
 <link rel="icon" href="icon-192.png" sizes="192x192">
-<meta name="theme-color" content="#4A6B38">
+<meta name="theme-color" content="#EDF0E6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1B2019" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Make Hay">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>/* required styles */
 
 .leaflet-pane,
@@ -743,16 +744,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #panel { position: relative; z-index: 500; background: var(--paper); display: flex; flex-direction: column; min-height: 0;
            overflow: hidden; box-shadow: -1px 0 0 var(--line); }
   .sheetbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; }
-  /* Full screen from the home screen: the map runs under the status bar and notch; a soft shade keeps the clock readable */
-  body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: calc(env(safe-area-inset-top, 0px) * 1.4); z-index: 1100; pointer-events: none;
-                 background: linear-gradient(rgb(0 0 0 / .42), rgb(0 0 0 / 0)); }
-  .leaflet-top { top: env(safe-area-inset-top, 0px); }
+  /* The map sits between the top bar and the bottom panel */
+  #map { top: var(--topbar-h, 0px); }
   .leaflet-left { left: env(safe-area-inset-left, 0px); }
   .leaflet-right { right: env(safe-area-inset-right, 0px); }
   .leaflet-bottom { bottom: env(safe-area-inset-bottom, 0px); }
   /* Phones on their side: keep the map toolbar on one row */
   @media (min-width: 801px) and (max-height: 500px) {
-    body .toolbar { flex-direction: row; align-items: flex-start; left: max(10px, env(safe-area-inset-left, 0px)); }
+    body .toolbar { flex-direction: row; align-items: center; }
     .leaflet-control-zoom { display: none; }
     .leaflet-container .leaflet-control-attribution { max-width: 240px; }
     body .searchbox { flex: 1 1 auto; min-width: 0; }
@@ -773,7 +772,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .seg { display: flex; border: 1px solid var(--edge); }
   .seg label { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 42px; cursor: pointer; border-right: 1px solid var(--edge); font-size: 14px; }
   .seg label:last-child { border-right: 0; }
-  .updatebar { position: absolute; z-index: 1150; left: 50%; transform: translateX(-50%); top: calc(64px + env(safe-area-inset-top, 0px));
+  .updatebar { position: absolute; z-index: 1150; left: 50%; transform: translateX(-50%); top: calc(var(--topbar-h, 60px) + 8px);
                width: min(420px, calc(100% - 20px)); display: flex; align-items: center; gap: 10px; background: var(--moss); color: var(--moss-ink);
                padding: 4px 4px 4px 14px; box-shadow: var(--shadow); font-weight: 500; }
   .updatebar span { flex: 1; min-width: 0; }
@@ -837,14 +836,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
   /* Editing a patch on a phone: a slim patch bar replaces the strip and the map keeps the screen */
   .patchbar { display: none; }
   @media (max-width: 800px) {
-    body .toolbar { flex-direction: row; align-items: flex-start; left: max(10px, env(safe-area-inset-left, 0px)); }
+    body .toolbar { flex-direction: row; align-items: center; }
     .leaflet-control-zoom { display: none; }   /* pinch to zoom on phones; frees the top row for search */
     body .searchbox { flex: 1 1 auto; min-width: 0; }
     body .toolrow { flex-wrap: nowrap; flex: none; }
     .toolrow .long { display: none; }
     #locate { width: 44px; padding: 0; text-align: center; font-size: 18px; }
-    body.editing .toolbar { opacity: 0; pointer-events: none; }
-    body.editing .toolbar * { pointer-events: none; }
     body.editing .leaflet-control-zoom, body.editing .leaflet-bottom.leaflet-left, body.editing .leaflet-control-attribution { opacity: 0; pointer-events: none; }
     body.editing .leaflet-bottom.leaflet-left * { pointer-events: none; }
     #panel.editing .sheethandle, #panel.editing .sheetbody, #panel.editing .totalbar { display: none !important; }
@@ -890,18 +887,19 @@ svg.leaflet-image-layer.leaflet-interactive path {
   a.link { color: var(--moss); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
   /* Map controls */
-  .toolbar { position: absolute; z-index: 1000; top: calc(10px + env(safe-area-inset-top, 0px)); left: calc(64px + env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px));
-             display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .toolbar { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; display: flex; flex-direction: row; align-items: center; gap: 8px;
+             background: var(--paper); border-bottom: 1px solid var(--line);
+             padding: calc(8px + env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) 8px max(10px, env(safe-area-inset-left, 0px)); }
   .toolbar > * { pointer-events: auto; }
-  .searchbox { display: flex; max-width: 420px; background: var(--card); border-radius: 0; box-shadow: var(--shadow); }
-  .searchbox input { background: var(--card); border-bottom: 0; }
+  .searchbox { display: flex; flex: 1 1 auto; min-width: 0; max-width: 460px; background: var(--field); border-bottom: 1px solid var(--edge); }
+  .searchbox input { background: none; border-bottom: 0; }
   .searchbox input { flex: 1; border: 0; background: none; border-radius: 0; padding-left: 16px; }
   .searchbox button { border: 0; border-left: 1px solid var(--line); background: none; border-radius: 0; color: var(--moss); font-weight: 600; text-align: center; }
-  .toolrow { display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
+  .toolrow { display: flex; gap: 8px; flex-wrap: nowrap; flex: none; }
   .toolrow > * { pointer-events: auto; }
-  .chip { border-radius: 0; border: 0; box-shadow: var(--shadow); padding: 6px 14px; background: var(--card); }
+  .chip { border-radius: 0; border: 1px solid var(--edge); box-shadow: none; padding: 6px 14px; background: var(--card); }
   .chip.primary { font-weight: 600; }
-  .chip.primary { background: var(--moss); color: var(--moss-ink); }
+  .chip.primary { background: var(--moss); color: var(--moss-ink); border-color: var(--moss); }
   .leaflet-touch .leaflet-bar, .leaflet-bar { border: 0 !important; border-radius: 0; box-shadow: var(--shadow); overflow: hidden; }
   .leaflet-bar a, .leaflet-touch .leaflet-bar a { width: 44px !important; height: 44px !important; line-height: 44px !important; background: var(--card); color: var(--ink); border-color: var(--line); border-radius: 0 !important; font: 400 22px/44px var(--mono) !important; }
   .leaflet-control-layers { border: 0 !important; border-radius: 0 !important; box-shadow: var(--shadow) !important; background: var(--card) !important; color: var(--ink); }
@@ -1757,7 +1755,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.4.1';   // keep in step with version.json
+const APP_VERSION = '1.5.0';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');
@@ -1959,10 +1957,22 @@ addEventListener('resize', fixIOSGap);
 phone.addEventListener('change', () => applySheet());
 addEventListener('resize', () => applySheet());
 // keep the part of the map you are looking at clear of the sheet
-const mapPad = () => ({ paddingTopLeft: [30, document.body.classList.contains('editing') ? 30 : 80], paddingBottomRight: [30, (phone.matches ? $('panel').offsetHeight : 0) + 30] });
+const mapPad = () => ({ paddingTopLeft: [30, 30], paddingBottomRight: [30, (phone.matches ? $('panel').offsetHeight : 0) + 30] });
 function revealPatch(id) {
   // phones edit on the map with the patch bar; just keep the patch clear of it
-  setTimeout(() => { if (layers[id]) map.panInside(layers[id].getBounds().getCenter(), mapPad()); }, phone.matches ? 300 : 0);
+  setTimeout(() => {
+    const layer = layers[id]; if (!layer) return;
+    // scroll the whole patch into the visible part of the map (between the top bar and the bottom panel) without zooming
+    const mapBox = map.getContainer().getBoundingClientRect();
+    const visBottom = (phone.matches ? $('panel').getBoundingClientRect().top : mapBox.bottom) - mapBox.top - 24, visTop = 24;
+    const b = layer.getBounds(), nw = map.latLngToContainerPoint(b.getNorthWest()), se = map.latLngToContainerPoint(b.getSouthEast());
+    let dy = 0;
+    if (se.y > visBottom) dy = Math.min(se.y - visBottom, nw.y - visTop);   // move up, but never push the top out of view
+    else if (nw.y < visTop) dy = nw.y - visTop;
+    let dx = 0; const w = mapBox.width;
+    if (se.x > w - 24) dx = Math.min(se.x - (w - 24), nw.x - 24); else if (nw.x < 24) dx = nw.x - 24;
+    if (dx || dy) map.panBy([dx, dy]);
+  }, phone.matches ? 300 : 0);
   if (phone.matches) return;
   requestAnimationFrame(() => {
     const card = $('patches').children[job.patches.findIndex(p => p.id === id)];
@@ -2027,6 +2037,15 @@ map.on('locationerror', () => flash('Location unavailable'));
   base.once('load', hide);
   setTimeout(hide, 3000);
 })();
+// Map starts below the top bar: measure it and keep the map sized to the space left
+function syncTopbar() {
+  const hgt = document.querySelector('.toolbar').offsetHeight;
+  document.documentElement.style.setProperty('--topbar-h', hgt + 'px');
+  map.invalidateSize({ pan: false });
+}
+syncTopbar();
+addEventListener('resize', syncTopbar);
+if (document.fonts) document.fonts.ready.then(syncTopbar);
 drawHome();
 applySheet();
 loadJob(job, !store.view);

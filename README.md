@@ -11,6 +11,11 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 1.5.0
+
+- A solid top bar holds search, location and Draw, with the status bar in the same colour. The map sits between the top bar and the bottom panel, which removes the black strip iPhones left at the bottom. On iPhone, re-add the icon once.
+- Tapping a patch scrolls the whole patch into view above the patch bar.
+
 ## Version 1.4.1
 
 - Fix: the strip iPhones leave below the app now matches the bottom panel instead of showing black.

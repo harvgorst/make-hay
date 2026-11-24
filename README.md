@@ -11,6 +11,10 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 1.6.4
+
+- Fix: rounded corners now show on every button, menu and box, including Draw, Locate, Copy quote and the difficulty menus, and are a touch rounder.
+
 ## Version 1.6.3
 
 - Slightly rounded corners on buttons, boxes and cards.

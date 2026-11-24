@@ -21,7 +21,7 @@ A phone-first web app for pricing scything work: draw patches on a satellite map
 
 ## Design
 
-- Flat, IBM-style: a slight 4px corner radius (`--r`) on controls and cards; edge-to-edge bars, the map and patch handles stay square. Thin 1px rules, inputs with a tinted fill and a bottom line.
+- Flat, IBM-style: a slight 6px corner radius (`--r`) on controls and cards; edge-to-edge bars, the map and patch handles stay square. Thin 1px rules, inputs with a tinted fill and a bottom line.
 - Type: IBM Plex Sans for text; Space Mono (retro) for figures.
 - Palette: moss and lichen greens (accent `#4A6B38`), with a dark-mode set of tokens; difficulty colours green / straw / orange / red.
 - Phones come first: a solid top bar (search, location, Draw) in the panel colour, the map between it and a bottom sheet (slim strip or opened). The status bar stays iOS's own (`default`): **never** use `black-translucent`, because on iPhones it leaves an unpaintable strip at the bottom and the owner doesn't want that at any cost. Editing a patch uses the patch bar, not the sheet. Keep tap targets at least 44px.

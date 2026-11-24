@@ -1802,7 +1802,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.7.1';   // keep in step with version.json
+const APP_VERSION = '1.7.2';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');
@@ -1937,7 +1937,7 @@ function drawMix(el, j) {
 
 // ---------- Phone bottom sheet ----------
 const phone = matchMedia('(max-width: 800px)');
-const sheetOpenH = () => Math.round(innerHeight * 0.5);
+const sheetOpenH = () => Math.round(innerHeight * 0.68);
 function sheetClosedH() {
   const tb = $('totalbar'), hd = $('sheethandle');
   return hd.offsetHeight + tb.offsetHeight;

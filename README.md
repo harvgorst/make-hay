@@ -11,6 +11,10 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 1.7.2
+
+- The job sheet opens to about two-thirds of the screen again. If the patches would be hidden, the map still moves them into the strip above it.
+
 ## Version 1.7.1
 
 - New fonts: Barlow for text and Barlow Semi Condensed for areas and prices, in the style of road signs and farm machinery lettering.

@@ -11,6 +11,25 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 1.7.3
+
+Fixes from a round of testing:
+- Settings jump links no longer push the sheet out of place, which could leave a blank strip that wouldn't reopen.
+- The Undo message now appears under the top bar on phones, so it can't cover the draw bar, hints or the patch bar. It goes away when you start drawing or switch jobs.
+- The sheet can't be opened by accident while drawing.
+- Closing the sheet from Saved jobs or Settings goes back to the Job view, so the total and Copy quote are always in the strip.
+- "Use standard rates" asks for its second tap again after you switch units.
+- "Use map centre as home" uses the middle of the map you can see. Opening the sheet no longer moves the map.
+- With rounding on, the total never drops below the minimum charge.
+- Search closes the sheet and puts the place in the middle of the visible map. When offline it says so.
+- The difficulty guide stays below the top bar on small phones.
+- Saved jobs and Settings end clear of the iPhone home bar.
+- Rates, travel and minimum can't be negative. Rates typed in m² or ft² keep to whole £20s per acre, and earlier-rate sets show the figures they'd apply.
+- Quote lines add up exactly to the scything total.
+- If copying fails, the quote opens selected in the sheet. The feedback fallback no longer rewrites your message.
+- Larger tap targets, a red "Delete?" on saved jobs, and thousands commas on large acre figures.
+- A little more space above the search bar.
+
 ## Version 1.7.2
 
 - The job sheet opens to about two-thirds of the screen again. If the patches would be hidden, the map still moves them into the strip above it.

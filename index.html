@@ -743,6 +743,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
          display: grid; grid-template-columns: 1fr 400px; height: 100dvh; overflow: hidden; }
   #mapwrap { position: relative; min-height: 0; }
   #map { position: absolute; inset: 0; background: var(--ground); }
+  #panel { overflow: clip; }
   #panel { position: relative; z-index: 500; background: var(--paper); display: flex; flex-direction: column; min-height: 0;
            overflow: hidden; box-shadow: -1px 0 0 var(--line); }
   .sheetbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; }
@@ -762,12 +763,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
     #locate { width: 44px; padding: 0; text-align: center; font-size: 18px; }
   }
   .sheetbody > div { padding: 14px max(16px, env(safe-area-inset-right, 0px)) 18px max(16px, env(safe-area-inset-left, 0px)); }
+  #jobsview, #settingsview { padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
   .tabs { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: 1fr 1.3fr 1fr; background: var(--paper); border-bottom: 1px solid var(--line);
           padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
   .tabs button { border: 0; border-bottom: 3px solid transparent; background: none; text-align: center; padding: 6px 4px; color: var(--muted); font-weight: 500; white-space: nowrap; }
   .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--moss); font-weight: 600; }
   .jumps { display: flex; flex-wrap: wrap; gap: 6px; }
-  .jumps a { color: var(--ink); text-decoration: none; background: var(--field); border-bottom: 1px solid var(--edge); padding: 6px 10px; font-size: 14px; min-height: 36px; display: inline-flex; align-items: center; }
+  .jumps a { color: var(--ink); text-decoration: none; background: var(--field); border-bottom: 1px solid var(--edge); padding: 6px 12px; font-size: 14px; min-height: 44px; display: inline-flex; align-items: center; }
   #settingsview section { scroll-margin-top: 56px; }
   .fb { display: grid; gap: 10px; }
   .fb textarea { width: 100%; font: 16px/1.4 var(--body); border: 0; border-bottom: 1px solid var(--edge); background: var(--field); padding: 10px 12px; border-radius: 0; resize: vertical; color: var(--ink); }
@@ -797,7 +799,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .guideopt .gname { font-weight: 600; display: flex; justify-content: space-between; gap: 8px; }
   .guideopt .grate { font: 12px var(--mono); color: var(--muted); font-weight: 400; }
   .guideopt .gtext { font-size: 13px; line-height: 1.35; color: var(--muted); }
-  @media (max-width: 800px) { .guidesheet { left: 10px; right: 10px; width: auto; bottom: calc(var(--sheet-h, 120px) + 8px); } }
+  @media (max-width: 800px) { .guidesheet { left: 10px; right: 10px; width: auto; bottom: calc(var(--sheet-h, 120px) + 8px); max-height: calc(100dvh - var(--sheet-h, 120px) - var(--topbar-h, 60px) - 16px); } }
   /* In-app launch screen: matches the iPhone launch image, then fades once the map has drawn */
   .splash { position: fixed; inset: 0; z-index: 6000; background: #FDF8E1; display: flex; align-items: center; justify-content: center; }
   .splash img { width: 72vmin; max-width: 560px; height: auto; }
@@ -849,7 +851,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     body.editing .leaflet-control-zoom, body.editing .leaflet-bottom.leaflet-left, body.editing .leaflet-control-attribution { opacity: 0; pointer-events: none; }
     body.editing .leaflet-bottom.leaflet-left * { pointer-events: none; }
     #panel.editing .sheethandle, #panel.editing .sheetbody, #panel.editing .totalbar { display: none !important; }
-    body > .toast { left: 16px; right: 16px; width: auto; bottom: calc(var(--sheet-h, 120px) + 10px); }
+    body > .toast { left: 16px; right: 16px; width: auto; bottom: auto; top: calc(var(--topbar-h, 60px) + 8px); }
     #panel.editing .patchbar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 8px max(16px, env(safe-area-inset-right, 0px)) max(6px, calc(env(safe-area-inset-bottom, 0px) - 16px)) max(16px, env(safe-area-inset-left, 0px));
                                box-shadow: inset 6px 0 0 var(--c, var(--moss)); }
     .patchbar .pbrow { display: flex; gap: 8px; align-items: center; min-width: 0; }
@@ -858,7 +860,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     .patchbar .pbfoot { justify-content: space-between; margin-top: -2px; }
     .patchbar .pbhint { font-size: 12px; text-align: right; min-width: 0; }
     .pbgrab .bar { width: 40px; height: 4px; background: var(--edge); }
-    .dangerlink { border: 0; background: none; color: var(--danger); font-weight: 600; padding: 4px 0; min-height: 36px; flex: none; }
+    .dangerlink { border: 0; background: none; color: var(--danger); font-weight: 600; padding: 4px 0; min-height: 44px; flex: none; }
     .dangerlink.armed { color: var(--moss-ink); background: var(--danger); padding: 6px 12px; }
     .patchbar .pname { flex: 1 1 auto; min-width: 0; width: 0; }
     .patchbar select { flex: none; background-color: var(--field); box-shadow: inset 4px 0 0 var(--c); padding-left: 14px; }
@@ -890,12 +892,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
   input, select { border: 0; border-bottom: 1px solid var(--edge); background: var(--field); border-radius: 0; padding: 9px 12px; min-width: 0; min-height: 44px; font-size: 16px; }
   .row { display: flex; gap: 10px; align-items: center; }
   .row > .grow, .grow { flex: 1; min-width: 0; }
-  a.link { color: var(--moss); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  a.link { color: var(--moss); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; display: inline-block; padding: 12px 10px; margin: -12px -10px; }
 
   /* Map controls */
   .toolbar { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; display: flex; flex-direction: row; align-items: center; gap: 8px;
              background: var(--topbar); border-bottom: 1px solid var(--topbar-line);
-             padding: calc(3px + env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) 6px max(10px, env(safe-area-inset-left, 0px)); }
+             padding: calc(10px + env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) 8px max(10px, env(safe-area-inset-left, 0px)); }
   .toolbar > * { pointer-events: auto; }
   .searchbox { display: flex; flex: 1 1 auto; min-width: 0; max-width: 460px; background: var(--field); border-bottom: 1px solid var(--edge); }
   .searchbox input { background: none; border-bottom: 0; }
@@ -958,9 +960,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .ptop .pname { font-size: 16px; padding: 2px 0; min-height: 0; }
   .ptop .parea { grid-column: 1 / -1; font: 13px/1.3 var(--mono); }
   .pctl { display: flex; align-items: center; gap: 8px; }
-  .pctl select { min-height: 40px; font-size: 14px; }
-  .pctl .guidebtn { min-height: 40px; }
-  .pdel { margin-left: auto; min-height: 40px; padding: 4px 6px; border: 0; background: none; color: var(--muted); font-size: 13px; font-weight: 500; }
+  .pctl select { min-height: 44px; font-size: 14px; }
+  .pctl .guidebtn { min-height: 44px; }
+  .pdel { margin-left: auto; min-height: 44px; padding: 4px 6px; border: 0; background: none; color: var(--muted); font-size: 13px; font-weight: 500; }
   .pdel.armed { color: var(--danger); font-weight: 600; }
   .iconbtn { width: 44px; padding: 0; border: 0; background: none; color: var(--muted); font-size: 20px; flex: none; text-align: center; }
   @media (hover: hover) { .iconbtn:hover { color: var(--danger); } }
@@ -1007,6 +1009,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .jobcard .muted { grid-column: 1; }
   .jobcard .jtotal { grid-column: 2; grid-row: 1 / span 2; align-self: center; font: 700 15px var(--mono); display: flex; align-items: center; gap: 10px; }
   .jobcard .del { min-width: 64px; }
+  .jobcard .del.armed { color: var(--danger); font-size: 14px; font-weight: 600; min-width: 72px; }
   .pill { font-size: 12px; font-weight: 600; color: var(--ink); background: var(--moss-soft); border-radius: 0; padding: 2px 6px; margin-left: 6px; white-space: nowrap; }
 
   /* Settings */
@@ -1231,7 +1234,7 @@ const D = Object.fromEntries(DIFFS.map(d => [d.key, d]));
 const KEY = 'scythe-pricer-v2', OLD_KEY = 'scythe-pricer-v1';
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const money = n => '£' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money = n => (n < 0 ? '-£' : '£') + Math.abs(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 // Areas are stored in m² and rates per m²; the Units setting only changes how they are shown and typed
 const UNITS = {
   acre: { m2: 4046.8564224, label: 'acre', rateDp: 0, step: '20' },
@@ -1239,7 +1242,7 @@ const UNITS = {
   ft2:  { m2: 0.09290304,   label: 'ft²',  rateDp: 4, step: '0.0001' },
 };
 const unit = () => UNITS[(typeof store !== 'undefined' && store.units) || 'acre'];
-const fmtIn = (a, u) => u === 'acre' ? (a / UNITS.acre.m2).toFixed(2) + ((a / UNITS.acre.m2).toFixed(2) === '1.00' ? ' acre' : ' acres')
+const fmtIn = (a, u) => u === 'acre' ? (a / UNITS.acre.m2).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ((a / UNITS.acre.m2).toFixed(2) === '1.00' ? ' acre' : ' acres')
                        : Math.round(a / UNITS[u].m2).toLocaleString('en-GB') + ' ' + UNITS[u].label;
 const fmtArea = a => fmtIn(a, (typeof store !== 'undefined' && store.units) || 'acre');
 // the second, smaller figure: m² when working in acres, otherwise acres
@@ -1293,6 +1296,7 @@ if (store.home === undefined) store.home = null;
 // Earlier versions had a typed call-out per job: keep any amount already entered as that job's travel figure
 for (const j of store.jobs) if (!('travelOverride' in j)) { j.travelOverride = +j.callout > 0 ? +j.callout : null; delete j.callout; }
 if (typeof store.minimum !== 'number') store.minimum = (store.defaults && +store.defaults.minimum) || 0;
+for (const j of store.jobs) for (const q of j.patches || []) if (!DIFFS.some(d => d.key === q.diff)) q.diff = 'medium';
 let job = store.jobs.find(j => j.id === store.currentId);
 if (!job) { job = makeJob(); store.jobs.push(job); store.currentId = job.id; }
 const isEmpty = j => !j.patches.length && !j.name.trim();
@@ -1314,10 +1318,11 @@ function ringArea(ll) {
 }
 function jobTotals(j) {
   let area = 0, sub = 0;
-  for (const p of j.patches) { const a = ringArea(p.latlngs); area += a; sub += a * (store.rates[p.diff] || 0); }
+  for (const p of j.patches) { const a = ringArea(p.latlngs); area += a; sub += Math.round(a * (store.rates[p.diff] || 0) * 100) / 100; }
   const callout = j.patches.length ? travelFor(j).cost : 0, minimum = +store.minimum || 0;
   const exact = Math.max(sub + callout, j.patches.length ? minimum : 0);
-  const total = store.round10 ? Math.round(exact / 10) * 10 : exact;   // minimum applies first, then the rounding
+  let total = store.round10 ? Math.round(exact / 10) * 10 : exact;   // minimum applies first, then the rounding
+  if (store.round10 && j.patches.length && total < minimum) total = Math.ceil(minimum / 10) * 10;
   return { area, sub, callout, exact, total };
 }
 
@@ -1549,7 +1554,7 @@ function updateDrawbar() {
   $('finishdraw').disabled = n < 3;
 }
 map.on('pm:drawstart', e => {
-  drawing = true; setHint(''); $('drawbar').hidden = false; $('toolrow').hidden = true;
+  drawing = true; setHint(''); $('drawbar').hidden = false; $('toolrow').hidden = true; $('toast').hidden = true;
   map.doubleClickZoom.disable(); document.body.classList.add('drawing');
   if (phone.matches && sheetOpen) setSheet(false);
   e.workingLayer.on('pm:vertexadded', () => setTimeout(updateDrawbar, 0));
@@ -1558,6 +1563,7 @@ map.on('pm:drawstart', e => {
 map.on('pm:drawend', () => {
   drawing = false; $('drawbar').hidden = true; $('toolrow').hidden = false;
   map.doubleClickZoom.enable(); document.body.classList.remove('drawing');
+  applySheet();
 
 });
 // A tap that lands on an existing corner is ignored by the drawing tool; say so rather than failing silently
@@ -1611,7 +1617,7 @@ function render() {
       </div>
       ${p.id === selected ? '<div class="muted">Drag corners on the map to reshape. Double-tap a corner to remove it. Drag a small midpoint to add one.</div>' : ''}`;
     el.onclick = ev => {
-      if (ev.target.closest('input,select,button') || selected === p.id) return;
+      if (ev.target.closest('input,select,button') || selected === p.id || drawing) return;
       if (isPhone() && sheetOpen) setSheet(false, false);
       select(p.id);
       setTimeout(() => map.fitBounds(layer.getBounds(), { maxZoom: 20, ...mapPad() }), 0);
@@ -1656,7 +1662,7 @@ function render() {
 }
 
 // Rates and minimum charge are shared by all jobs. A blank or half-typed box is ignored, so a rate is never wiped to zero by accident.
-const readNum = v => (v === '' || !isFinite(+v)) ? null : +v;
+const readNum = v => (v === '' || !isFinite(+v) || +v < 0) ? null : Math.min(+v, 1e7);
 $('rates').innerHTML = DIFFS.map(d =>
   `<div class="field"><label for="r-${d.key}" class="ratelabel"><span class="dot" style="--c:${d.color}"></span><span>${d.name}<small class="guide">${d.guide}</small></span></label><span class="money"><span>£</span><input id="r-${d.key}" type="number" min="0" step="0.01" inputmode="decimal"></span></div>`).join('');
 const fix2 = v => (+v).toFixed(2);
@@ -1665,7 +1671,7 @@ for (const d of DIFFS) $('r-' + d.key).oninput = e => {
   store.rates[d.key] = v / unit().m2; save(false); render(); renderRestore();
 };
 for (const d of DIFFS) $('r-' + d.key).onblur = e => {
-  if (store.units === 'acre') { store.rates[d.key] = round20(store.rates[d.key]); save(false); render(); renderRestore(); }
+  store.rates[d.key] = round20(store.rates[d.key]); save(false); render(); renderRestore();
   e.target.value = rateIn(store.rates[d.key]);
 };
 for (const [id, k] of [['permile', 'perMile'], ['freemiles', 'freeMiles']]) {
@@ -1680,17 +1686,19 @@ function homeLabel() {
 function setHome(lat, lng, label) {
   store.home = { lat, lng, label }; save(false); drawHome(); homeLabel(); render();
 }
-$('homecentre').onclick = () => { const c = map.getCenter(); setHome(c.lat, c.lng, 'Map point ' + c.lat.toFixed(5) + ', ' + c.lng.toFixed(5)); };
+const visibleCentre = () => { const s = map.getSize(), ov = phone.matches ? $('panel').offsetHeight : 0; return map.containerPointToLatLng([s.x / 2, Math.max(0, s.y - ov) / 2]); };
+$('homecentre').onclick = () => { const c = visibleCentre(); setHome(c.lat, c.lng, 'Map point ' + c.lat.toFixed(5) + ', ' + c.lng.toFixed(5)); };
 $('homesearch').onsubmit = async e => {
   e.preventDefault();
   const q = $('homeq').value.trim(); if (!q) return;
+  let r;
+  try { r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q)); }
+  catch (err) { return flash('Search needs a connection. Try again when you have signal.'); }
   try {
-    const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q));
     const j = await r.json(); if (!j.length) throw 0;
     setHome(+j[0].lat, +j[0].lon, j[0].display_name.split(',').slice(0, 3).join(','));
     $('homeq').value = '';
-    map.setView([+j[0].lat, +j[0].lon], 16);
-  } catch (err) { $('homelabel').innerHTML = 'Could not find "' + esc(q) + '". Try a postcode, or move the map there and use the map centre.'; }
+  } catch (err) { flash(r.ok ? 'Could not find "' + q + '". Try a postcode, or move the map there and use the map centre.' : 'Search is not working right now. Try again shortly.'); }
 };
 store.biz = Object.assign({ name: '', phone: '' }, store.biz);
 $('bizname').value = store.biz.name; $('bizphone').value = store.biz.phone;
@@ -1698,6 +1706,7 @@ $('bizname').oninput = e => { store.biz.name = e.target.value.trim(); save(false
 $('bizphone').oninput = e => { store.biz.phone = e.target.value.trim(); save(false); };
 for (const r of document.querySelectorAll('input[name=units]')) r.onchange = () => {
   store.units = r.value; save(false); fillInputs(); render(); renderRestore();
+  if (armedDefaults) { clearTimeout(armedDefaults); armedDefaults = null; }
   $('defaultrates').textContent = defaultsLabel();
 };
 $('round10').onchange = e => { store.round10 = e.target.checked; save(false); render(); };
@@ -1744,6 +1753,7 @@ function fillInputs() {
 }
 function loadJob(j, fit = true) {
   if (typeof closeGuide === 'function') closeGuide();
+  $('toast').hidden = true;
   if (drawing) map.pm.disableDraw();
   selected = null; clearLayers();
   // drop an untouched blank job instead of leaving it in the list
@@ -1770,7 +1780,7 @@ function renderRestore() {
   $('restore').hidden = !sets.length;
   $('restorelist').innerHTML = sets.map((s, i) => `
     <div class="restoreset">
-      <span>${DIFFS.map(d => `${d.name} ${rateLabel(s.r[d.key])}`).join(', ')} per ${unit().label}<br><span class="muted">from ${esc(s.from)}</span></span>
+      <span>${DIFFS.map(d => `${d.name} ${rateLabel(round20(s.r[d.key]))}`).join(', ')} per ${unit().label}<br><span class="muted">from ${esc(s.from)}</span></span>
       <button data-i="${i}">Use these</button>
     </div>`).join('');
   $('restorelist').querySelectorAll('button').forEach(b => b.onclick = () => {
@@ -1796,13 +1806,16 @@ $('defaultrates').onclick = () => {
 };
 // Jump links inside Settings scroll the panel rather than the page
 document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
-  e.preventDefault(); document.querySelector(a.getAttribute('href')).scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  e.preventDefault();
+  const body = $('sheetbody'), sec = document.querySelector(a.getAttribute('href'));
+  const top = sec.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop - body.querySelector('.tabs').offsetHeight - 8;
+  body.scrollTo({ top, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 });
 
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.7.2';   // keep in step with version.json
+const APP_VERSION = '1.7.3';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');
@@ -1841,7 +1854,11 @@ async function copyFeedback() {
   const f = feedbackText(), text = (FEEDBACK_TO ? 'To: ' + FEEDBACK_TO + '\n' : '') + 'Subject: Make Hay feedback: ' + f.type + '\n\n' + f.body;
   const el = FEEDBACK_TO ? $('fbcopy') : $('fbsend'), was = el.textContent;
   try { await navigator.clipboard.writeText(text); el.textContent = 'Copied'; }
-  catch (err) { $('fbmsg').value = text; $('fbmsg').select(); el.textContent = FEEDBACK_TO ? 'select the text above' : 'Select the text above and copy'; }
+  catch (err) {
+    let out = $('fbout');
+    if (!out) { out = document.createElement('textarea'); out.id = 'fbout'; out.readOnly = true; out.rows = 6; out.setAttribute('aria-label', 'Feedback to copy'); $('fbmsg').after(out); }
+    out.value = text; out.focus(); out.select(); el.textContent = 'Select the text above and copy';
+  }
   setTimeout(() => el.textContent = was, 2500);
 }
 $('feedback').onsubmit = e => {
@@ -1879,7 +1896,7 @@ function renderJobs() {
         <span class="muted">${fmtDate(j.updated)}, ${j.patches.length} patch${j.patches.length === 1 ? '' : 'es'}, ${fmtArea(t.area)}</span>
         <span class="jtotal"><span class="mix" role="img"></span><span>${gbp(money(t.total).replace(/\.00$/, ''))}</span></span>
       </button>
-      <button class="iconbtn del" aria-label="Delete ${esc(j.name || 'Untitled job')}">${armedDelete === j.id ? 'Delete?' : '✕'}</button>`;
+      <button class="iconbtn del${armedDelete === j.id ? ' armed' : ''}" aria-label="Delete ${esc(j.name || 'Untitled job')}">${armedDelete === j.id ? 'Delete?' : '✕'}</button>`;
     drawMix(el.querySelector('.mix'), j);
     el.querySelector('.open').onclick = () => { if (j !== job) loadJob(j); showJobs(false); };
     el.querySelector('.del').onclick = () => {
@@ -1919,7 +1936,11 @@ $('copy').onclick = async () => {
   const text = lines.join('\n');
   $('quote').value = text; $('quote').hidden = false;
   try { await navigator.clipboard.writeText(text); $('copy').textContent = 'Copied'; $('quote').hidden = true; }
-  catch (e) { $('quote').select(); $('copy').textContent = 'Copy from the box'; }
+  catch (e) {
+    if (phone.matches && !sheetOpen) setSheet(true, false);
+    setTimeout(() => { $('quote').scrollIntoView({ block: 'nearest' }); $('panel').scrollTop = 0; $('quote').focus(); $('quote').select(); }, 50);
+    $('copy').textContent = 'Select and copy above';
+  }
   setTimeout(() => $('copy').textContent = 'Copy quote', 2000);
 };
 
@@ -1944,20 +1965,13 @@ function sheetClosedH() {
 }
 let sheetOpen = !!store.sheetOpen;
 function setSheet(open, animate = true) {
+  if (open && drawing && phone.matches) return;
+  if (!open && phone.matches && $('jobview').hidden) showView('jobview');
   sheetOpen = open; store.sheetOpen = open; save(false);
   applySheet(animate);
-  if (open && phone.matches) keepJobInView();
-}
-// When the sheet opens, make sure the job's patches are still visible above it
-function keepJobInView() {
-  const ls = Object.values(layers); if (!ls.length || drawing) return;
-  const b = L.featureGroup(ls).getBounds(), size = map.getSize(), over = sheetOpenH();
-  const tl = map.latLngToContainerPoint(b.getNorthWest()), br = map.latLngToContainerPoint(b.getSouthEast());
-  if (tl.x >= 10 && tl.y >= 10 && br.x <= size.x - 10 && br.y <= size.y - over - 10) return;
-  map.fitBounds(b, { maxZoom: 19, paddingTopLeft: [30, 30], paddingBottomRight: [30, over + 30] });
 }
 function applySheet(animate = false) {
-  const panel = $('panel');
+  const panel = $('panel'); panel.scrollTop = 0;
   panel.classList.toggle('anim', animate);
   panel.classList.toggle('collapsed', phone.matches && !sheetOpen);
   if (!phone.matches) { panel.classList.remove('editing'); document.body.classList.remove('editing'); document.documentElement.style.removeProperty('--sheet-h'); panel.style.height = ''; return; }
@@ -1976,7 +1990,7 @@ function applySheet(animate = false) {
 (() => {
   const hd = $('sheethandle'); let startY = null, startH = 0, moved = false;
   hd.addEventListener('pointerdown', e => {
-    if (!phone.matches) return;
+    if (!phone.matches || drawing) return;
     startY = e.clientY; startH = $('panel').offsetHeight; moved = false;
     $('panel').classList.remove('anim'); hd.setPointerCapture(e.pointerId);
   });
@@ -2080,13 +2094,21 @@ $('search').onsubmit = async e => {
   e.preventDefault();
   const q = $('q').value.trim(); if (!q) return;
   const m = q.match(/^(-?\d+(?:\.\d+)?)[,\s]+(-?\d+(?:\.\d+)?)$/);
-  if (m) return map.setView([+m[1], +m[2]], 19);
+  $('q').blur();
+  const go = (lat, lng, z) => {
+    if (phone.matches && sheetOpen) setSheet(false, false);
+    map.setView([lat, lng], z, { animate: false });
+    if (phone.matches) map.panBy([0, $('panel').offsetHeight / 2], { animate: false });
+  };
+  if (m) return go(+m[1], +m[2], 19);
+  let r;
+  try { r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q)); }
+  catch (err) { return flash('Search needs a connection. Try again when you have signal.'); }
   try {
-    const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q));
     const j = await r.json();
     if (!j.length) throw 0;
-    map.setView([+j[0].lat, +j[0].lon], 18);
-  } catch (err) { flash('Could not find "' + q + '"'); }
+    go(+j[0].lat, +j[0].lon, 18);
+  } catch (err) { flash(r.ok ? 'Could not find "' + q + '"' : 'Search is not working right now. Try again shortly.'); }
 };
 $('locate').onclick = () => map.locate({ setView: true, maxZoom: 19 });
 map.on('locationerror', () => flash('Location unavailable'));

@@ -829,7 +829,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
     .sheethandle .sum { display: flex; align-items: center; gap: 10px; min-height: 34px; padding-right: 44px; }
     #panel:not(.collapsed) .sheethandle .sum { display: none; }
     @media (max-width: 360px) { #sumcount { display: none; } }
-    #panel:not(.collapsed) .sheethandle { min-height: 44px; border-bottom: 1px solid var(--line); }
+    #panel:not(.collapsed) .sheethandle { min-height: 30px; }
+    #panel:not(.collapsed) .sheethandle .chev { position: absolute; width: 1px; height: 1px; min-height: 0; overflow: hidden; clip-path: inset(50%); }
     .sheethandle .sumname { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sheethandle .chev { position: absolute; top: 2px; right: max(8px, env(safe-area-inset-right, 0px)); width: 44px; min-height: 40px; border: 0; padding: 0; text-align: center; font-size: 18px; color: var(--muted); background: none; }
     #panel.collapsed .totalbar { border-top: 0; padding-top: 4px; }
@@ -880,8 +881,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
   button, input, select, textarea { font: inherit; color: inherit; }
   button { cursor: pointer; min-height: 44px; border: 1px solid var(--edge); background: transparent; border-radius: 0; padding: 6px 14px; text-align: left; }
   button.primary { background: var(--moss); color: var(--moss-ink); border-color: var(--moss); font-weight: 600; }
-  button:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 7%, transparent); }
-  button.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--moss) 88%, #000); }
+  @media (hover: hover) {
+    button:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+    button.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--moss) 88%, #000); }
+  }
   button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid var(--moss); outline-offset: -2px; }
   input, select { border: 0; border-bottom: 1px solid var(--edge); background: var(--field); border-radius: 0; padding: 9px 12px; min-width: 0; min-height: 44px; font-size: 16px; }
   .row { display: flex; gap: 10px; align-items: center; }
@@ -951,7 +954,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .patch .nums { display: flex; justify-content: space-between; align-items: baseline; padding-right: 10px; font-family: var(--mono); font-size: 14px; }
   .patch .price { font-weight: 700; font-size: 14px; }
   .iconbtn { width: 44px; padding: 0; border: 0; background: none; color: var(--muted); font-size: 20px; flex: none; text-align: center; }
-  .iconbtn:hover { color: var(--danger); }
+  @media (hover: hover) { .iconbtn:hover { color: var(--danger); } }
   .empty { background: var(--card); border-radius: 0; padding: 16px; color: var(--muted); }
   .totals { display: grid; grid-template-columns: 1fr auto; gap: 0; border-top: 1px solid var(--line); }
   .totals > span { padding: 6px 0; border-bottom: 1px solid var(--line); }
@@ -961,6 +964,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .money { display: flex; align-items: center; border: 0; border-bottom: 1px solid var(--edge); border-radius: 0; background: var(--field); min-height: 44px; padding-left: 12px; font-family: var(--mono); }
   .money:focus-within { outline: 2px solid var(--moss); outline-offset: -2px; }
   .money > span { color: var(--muted); }
+  .gbp { font-family: var(--display); font-weight: 600; margin-right: .04em; }
+  .money > span, .tbig .gbp { font-family: var(--display); }
   .money input { border: 0; background: none; text-align: right; width: 100%; outline: none; min-height: 43px; padding-left: 4px; font-family: var(--mono); }
   #quote { width: 100%; height: 150px; font: 13px/1.45 var(--mono); border-radius: 0; border: 0; border-bottom: 1px solid var(--edge); background: var(--field); padding: 10px; margin-top: 10px; }
 
@@ -970,11 +975,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
               padding: 10px max(16px, env(safe-area-inset-right, 0px)) max(10px, calc(env(safe-area-inset-bottom, 0px) - 10px)) max(16px, env(safe-area-inset-left, 0px)); }
   .totalbar .tbox { flex: 1; min-width: 0; display: grid; }
   .totalbar .trow { display: flex; align-items: center; gap: 12px; }
-  .mix { display: flex; flex-direction: column; gap: 2px; width: 46px; flex: none; }
-  .mix i { display: block; height: 5px; background: color-mix(in srgb, var(--ink) 8%, transparent); }
-  .mix i b { display: block; height: 100%; background: var(--c); }
-  .jobcard .mix { width: 34px; gap: 1px; }
-  .jobcard .mix i { height: 4px; }
+  .mix { display: flex; gap: 1px; width: 52px; height: 10px; flex: none; border-radius: 2px; overflow: hidden; }
+  .mix i { display: block; height: 100%; background: var(--c); min-width: 2px; }
+  .jobcard .mix { width: 34px; height: 8px; }
   .totalbar .tlabel { font-size: 13px; color: var(--muted); }
   .totalbar .tbig { font: 700 24px/1.1 var(--mono); letter-spacing: -.03em; }
   .totalbar .tsub { font: 12px/1.3 var(--mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.3em; }
@@ -1469,7 +1472,7 @@ function renderPatchbar() {
   if (document.activeElement !== $('pbname')) $('pbname').value = p.name;
   $('pbdiff').value = p.diff;
   $('patchbar').style.setProperty('--c', D[p.diff].color);
-  $('pbnums').innerHTML = `${fmtArea(a)} <span class="muted">${acres(a)}</span> &nbsp;<b>${money(a * (store.rates[p.diff] || 0))}</b>`;
+  $('pbnums').innerHTML = `${fmtArea(a)} <span class="muted">${acres(a)}</span> &nbsp;<b>${gbp(money(a * (store.rates[p.diff] || 0)))}</b>`;
 }
 const selPatch = () => job.patches.find(x => x.id === selected);
 $('pbname').onchange = e => { const p = selPatch(); if (p) { p.name = e.target.value || 'Patch'; save(); render(); } };
@@ -1583,7 +1586,7 @@ function render() {
         <select aria-label="Difficulty">${DIFFS.map(d => `<option value="${d.key}"${d.key === p.diff ? ' selected' : ''}>${d.name}</option>`).join('')}</select>
         <button class="iconbtn" title="Delete patch" aria-label="Delete ${esc(p.name)}">✕</button>
       </div>
-      <div class="nums"><span>${fmtArea(a)} <span class="muted">${acres(a)}</span></span><span class="price">${money(price)}</span></div>
+      <div class="nums"><span>${fmtArea(a)} <span class="muted">${acres(a)}</span></span><span class="price">${gbp(money(price))}</span></div>
       <div class="guideline"><span class="muted">${D[p.diff].guide}</span><button class="guidebtn" data-guide="${p.id}">Guide</button></div>
       ${p.id === selected ? '<div class="muted">Drag corners on the map to reshape. Double-tap a corner to remove it. Drag a small midpoint to add one.</div>' : ''}`;
     el.onclick = ev => {
@@ -1607,8 +1610,8 @@ function render() {
     ${minApplied ? `<span>Minimum charge applied</span><span class="r">${money(t.exact)}</span>` : ''}`;
   const et = $('edittravel');
   if (et) et.onclick = et.onkeydown = ev => { if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') return; ev.preventDefault(); $('traveledit').hidden = !$('traveledit').hidden; render(); if (!$('traveledit').hidden) $('callout').focus(); };
-  $('totalbig').textContent = money(t.total).replace(/\.00$/, '');
-  $('totalsub').textContent = t.total !== t.exact ? 'exact ' + money(t.exact) : minApplied ? 'Minimum charge' : '\u00a0';
+  $('totalbig').innerHTML = gbp(money(t.total).replace(/\.00$/, ''));
+  $('totalsub').innerHTML = t.total !== t.exact ? 'exact ' + gbp(money(t.exact)) : minApplied ? 'Minimum charge' : '\u00a0';
   drawMix($('totalmix'), job);
   renderPatchbar();
   $('copy').disabled = !job.patches.length;
@@ -1767,7 +1770,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.6.4';   // keep in step with version.json
+const APP_VERSION = '1.6.5';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');
@@ -1842,7 +1845,7 @@ function renderJobs() {
       <button class="open" aria-label="Open ${esc(j.name || 'Untitled job')}">
         <span class="jname">${esc(j.name || 'Untitled job')}${j === job ? ' <span class="pill">Open</span>' : ''}</span>
         <span class="muted">${fmtDate(j.updated)}, ${j.patches.length} patch${j.patches.length === 1 ? '' : 'es'}, ${fmtArea(t.area)}</span>
-        <span class="jtotal"><span class="mix" role="img"></span>${money(t.total).replace(/\.00$/, '')}</span>
+        <span class="jtotal"><span class="mix" role="img"></span><span>${gbp(money(t.total).replace(/\.00$/, ''))}</span></span>
       </button>
       <button class="iconbtn del" aria-label="Delete ${esc(j.name || 'Untitled job')}">${armedDelete === j.id ? 'Delete?' : '✕'}</button>`;
     drawMix(el.querySelector('.mix'), j);
@@ -1889,12 +1892,13 @@ $('copy').onclick = async () => {
 };
 
 // Difficulty mix: one bar per difficulty, its length the share of the job's area at that difficulty
+const gbp = s => String(s).replace('£', '<span class="gbp">£</span>');
 function drawMix(el, j) {
   const area = Object.fromEntries(DIFFS.map(d => [d.key, 0])); let all = 0;
   for (const p of j.patches) { const a = ringArea(p.latlngs); area[p.diff] += a; all += a; }
   el.hidden = !all;
   if (!all) return;
-  el.innerHTML = DIFFS.map(d => `<i style="--c:${d.color}"><b style="width:${(area[d.key] / all * 100).toFixed(1)}%"></b></i>`).join('');
+  el.innerHTML = DIFFS.filter(d => area[d.key] > 0).map(d => `<i style="--c:${d.color};flex:${(area[d.key] / all).toFixed(4)} 1 0"></i>`).join('');
   el.setAttribute('aria-label', 'Area by difficulty: ' + DIFFS.map(d => `${d.name} ${Math.round(area[d.key] / all * 100)}%`).join(', '));
   el.title = el.getAttribute('aria-label');
 }
@@ -1946,10 +1950,16 @@ function applySheet(animate = false) {
   const end = e => {
     if (startY === null) return;
     const dy = e.clientY - startY; startY = null;
+    // The sheet resizes under the finger, so swallow the click that follows this tap
+    const until = Date.now() + 500;
+    const eat = ev => { if (Date.now() < until) { ev.stopPropagation(); ev.preventDefault(); } document.removeEventListener('click', eat, true); };
+    document.addEventListener('click', eat, true);
+    setTimeout(() => document.removeEventListener('click', eat, true), 500);
     if (!moved) { setSheet(!sheetOpen); return; }
     setSheet(dy < 0 ? (dy < -30 || sheetOpen) : !(dy > 30 || !sheetOpen));
   };
   hd.addEventListener('pointerup', end);
+  hd.addEventListener('click', () => {});   // marks the handle as tappable, so touch targeting doesn't snap to the map credits
   hd.addEventListener('pointercancel', e => { startY = null; applySheet(true); });
 })();
 $('sheettoggle').onclick = e => { if (e.detail === 0) setSheet(!sheetOpen); };   // keyboard; taps are handled by the handle

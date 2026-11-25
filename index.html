@@ -33,8 +33,8 @@
 <link rel="apple-touch-startup-image" media="screen and (device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="splash/splash-420x912@3-landscape.png">
 <link rel="icon" href="icon-64.png" sizes="64x64">
 <link rel="icon" href="icon-192.png" sizes="192x192">
-<meta name="theme-color" content="#EDF0E6" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1B2019" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#1B2019">
+<meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Make Hay">
@@ -728,12 +728,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
     --mono: "Barlow Semi Condensed", Barlow, system-ui, sans-serif;   /* figures: narrow, upright, like lettering on farm machinery */
     --sheet-overlap: env(safe-area-inset-bottom, 0px);
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --ground: #121611; --paper: #1B2019; --card: #252B22; --ink: #E6EADF; --muted: #A5AE9B;
+  /* One theme, always dark, whatever the phone's setting: keeps the iOS clock strip one colour */
+  :root {
+      --ground: #1B2019; --paper: #1B2019; --card: #252B22; --ink: #E6EADF; --muted: #A5AE9B;
       --line: #353D31; --edge: #79836E; --moss: #A9C98C; --moss-ink: #16200F; --moss-soft: #2E3A26;
       --danger: #EC9284; --shadow: 0 0 0 1px rgb(0 0 0 / .5), 0 2px 3px rgb(0 0 0 / .5); --field: #2C3329; --topbar: #1B2019; --topbar-line: #353D31; color-scheme: dark;
-    }
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
@@ -1815,7 +1814,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.7.4';   // keep in step with version.json
+const APP_VERSION = '1.8.0';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');

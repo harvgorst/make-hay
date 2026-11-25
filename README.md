@@ -11,6 +11,10 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 1.8.0
+
+- The app is now always dark, whatever the phone's light or dark setting, so the clock strip at the top, the search bar and the map backdrop are all one colour.
+
 ## Version 1.7.4
 
 - The clock and battery strip at the top is now the same colour as the search bar strip, in light and dark mode.

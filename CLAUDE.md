@@ -23,7 +23,7 @@ A phone-first web app for pricing scything work: draw patches on a satellite map
 
 - Flat, IBM-style: a slight 6px corner radius (`--r`) on controls and cards; edge-to-edge bars, the map and patch handles stay square. Thin 1px rules, inputs with a tinted fill and a bottom line.
 - Type: Barlow for text; Barlow Semi Condensed for figures (areas, prices, totals), with tabular figures. The owner chose this "Machinery" pairing in 1.7.1.
-- Palette: moss and lichen greens (accent `#4A6B38`), with a dark-mode set of tokens; difficulty colours green / straw / orange / red.
+- Palette: one dark theme always (owner's choice in 1.8.0, so the iOS clock strip matches): panels `#1B2019`, accent moss `#A9C98C`; difficulty colours green / straw / orange / red. The light tokens remain in `:root` but are overridden; don't bring back a `prefers-color-scheme` switch without asking.
 - Phones come first: a solid top bar (search, location, Draw) in the panel colour, the map between it and a bottom sheet (slim strip or opened). The status bar stays iOS's own (`default`): **never** use `black-translucent`, because on iPhones it leaves an unpaintable strip at the bottom and the owner doesn't want that at any cost. Editing a patch uses the patch bar, not the sheet. Keep tap targets at least 44px.
 
 ## Testing

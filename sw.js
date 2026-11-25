@@ -1,6 +1,6 @@
 // Keeps the app available offline. Always tries the internet first, skipping the browser's saved copy,
 // so a reload picks up the newest version. Map tiles and address search always come from the network.
-const CACHE = 'make-hay-2.1.0';
+const CACHE = 'make-hay-2.1.1';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable.png', 'apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener('activate', e => {

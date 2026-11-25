@@ -11,6 +11,12 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 2.1.1
+
+- Settings no longer has the row of shortcut buttons at the top; scroll to reach each section.
+- The opened sheet covers more of the screen (about four-fifths), leaving a strip of map.
+- On phones the difficulty guide now opens from the top, under the search bar, so it has room to show all four difficulties.
+
 ## Version 2.1.0
 
 - New look: a warm peat-brown dark theme with hay-yellow buttons, a little lighter than before and without the green tint.

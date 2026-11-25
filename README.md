@@ -11,6 +11,12 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 2.1.0
+
+- New look: a warm peat-brown dark theme with hay-yellow buttons, a little lighter than before and without the green tint.
+- A full-width line now separates the job name from the total in the closed sheet.
+- If the clock strip at the top doesn't change colour, re-add the home-screen icon.
+
 ## Version 2.0.1
 
 - The launch screen is cream with the logo all the way to the top again, without the dark band. Re-add the home-screen icon to pick this up.

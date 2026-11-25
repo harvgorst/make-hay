@@ -11,6 +11,16 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 2.0.0
+
+The 1.x work rolled into a release:
+
+- One dark theme, with the clock strip, search bar and launch screens all in the same dark green on iPhone.
+- Map between a solid top bar and a bottom sheet, with no bottom strip on iPhone.
+- Barlow type, slight rounded corners, and a stacked bar showing each job's mix of difficulties.
+- Rates kept to whole £20s per acre.
+- Fixes from a full testing round: sheet, search, quotes, totals and tap targets.
+
 ## Version 1.8.4
 
 - The plain screen between the logo and the map is now dark instead of cream. iPhones were taking the clock strip colour from it, which is why the strip stayed cream.

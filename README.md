@@ -11,6 +11,10 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 1.8.2
+
+- The clock strip at the top now uses the app's dark colour. iPhones paint it with the app's background colour from its settings file, which was still cream. Re-add the home-screen icon to pick this up.
+
 ## Version 1.8.1
 
 - Opening the app: after the logo, the screen stays plain cream until the map is ready, so the logo no longer jumps.

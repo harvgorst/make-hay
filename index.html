@@ -799,9 +799,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .guideopt .grate { font: 12px var(--mono); color: var(--muted); font-weight: 400; }
   .guideopt .gtext { font-size: 13px; line-height: 1.35; color: var(--muted); }
   @media (max-width: 800px) { .guidesheet { left: 10px; right: 10px; width: auto; bottom: calc(var(--sheet-h, 120px) + 8px); max-height: calc(100dvh - var(--sheet-h, 120px) - var(--topbar-h, 60px) - 16px); } }
-  /* In-app launch screen: plain cream after the iPhone launch image (no logo, so nothing jumps), then fades once the map has drawn */
-  .splash { position: fixed; inset: 0; z-index: 6000; background: #FDF8E1; display: flex; align-items: center; justify-content: center; }
-  .splash::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: calc(var(--topbar-h, 64px) - 1px); background: var(--topbar); border-bottom: 1px solid var(--topbar-line); }   /* the top bar, as on the iPhone launch image */
+  /* In-app launch screen: plain, after the iPhone launch image (no logo, so nothing jumps), then fades once the map has drawn.
+     Dark, not cream: iOS takes the clock strip colour from this full-screen layer as the page opens (cream strip up to 1.8.3). */
+  .splash { position: fixed; inset: 0; z-index: 6000; background: var(--topbar); display: flex; align-items: center; justify-content: center; }
   .splash img { width: 72vmin; max-width: 560px; height: auto; }
   .splash.gone { opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility 0s linear .35s; }
   @media (prefers-reduced-motion: reduce) { .splash.gone { transition: none; } }
@@ -1815,7 +1815,7 @@ document.querySelectorAll('.jumps a').forEach(a => a.onclick = e => {
 // ---------- Feedback ----------
 // The address feedback emails go to. Put it between the quotes.
 const FEEDBACK_TO = '';
-const APP_VERSION = '1.8.3';   // keep in step with version.json
+const APP_VERSION = '1.8.4';   // keep in step with version.json
 // Display check: what the phone is actually giving the app
 function renderDiag() {
   let probe = $('saprobe');

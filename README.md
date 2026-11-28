@@ -11,6 +11,11 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 2.2.0
+
+- New look, War table: a dark wood table, parchment cards, a pixel font and chunky bevelled buttons, in the style of old strategy games. It is the default.
+- Settings, Look: switch between War table and Peat and hay. The clock strip at the top matches the new look the next time you open the app.
+
 ## Version 2.1.1
 
 - Settings no longer has the row of shortcut buttons at the top; scroll to reach each section.

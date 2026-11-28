@@ -11,6 +11,11 @@ Make Hay prices scything work. Draw patches on a satellite map, give each one a 
 
 Your jobs and rates are saved on the device you use, not in this repository. When a new version is published, the app shows **A new version of Make Hay is ready · Update**.
 
+## Version 2.3.0
+
+- War table now uses Alegreya, a calligraphic book font, instead of the pixel font.
+- The launch screen has "Make Hay" in Jacquard 12, a pixel blackletter, under the scythe. Re-add the home-screen icon to see it.
+
 ## Version 2.2.0
 
 - New look, War table: a dark wood table, parchment cards, a pixel font and chunky bevelled buttons, in the style of old strategy games. It is the default.
